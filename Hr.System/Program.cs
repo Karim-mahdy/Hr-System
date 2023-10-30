@@ -1,3 +1,6 @@
+using Hr.Application.Interfaces;
+using Hr.Application.Services.implementation;
+using Hr.Application.Services.Interfaces;
 
 using Hr.Application.Interfaces;
 using Hr.Application.Services.implementation;
@@ -24,6 +27,30 @@ namespace Hr.System
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ApplicationDbContext>(option =>
                 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddIdentity<Employee, IdentityRole>(
+                option =>
+                {
+                    option.Password.RequireNonAlphanumeric = false;
+                    option.Password.RequiredLength = 5;
+                }
+
+                ).AddEntityFrameworkStores<ApplicationDbContext>();
+            
+
+             //builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+
+
+
+            //CORS configration
+            builder.Services.AddCors(corsOptions => {
+                corsOptions.AddPolicy("MyPolicy", corsPolicyBuilder =>
+                {
+                    corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddIdentity<Employee, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 
@@ -47,12 +74,12 @@ namespace Hr.System
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             app.UseAuthorization();
 
 
             app.MapControllers();
-
+            DbInitializer.Configure(app);
             app.Run();
         }
     }
