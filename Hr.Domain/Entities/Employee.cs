@@ -25,7 +25,7 @@ namespace Hr.Domain.Entities
         public TimeSpan LeaveTime { get; set; }
 
         // Navigation property to Department
-        public int DepartmentId { get; set; }
+        public int? DepartmentId { get; set; }
         public Department Department { get; set; }
         public ICollection<Attendance> Attendance { get; set; }
 

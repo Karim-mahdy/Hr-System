@@ -1,6 +1,9 @@
-
+using Hr.Application.Interfaces;
+using Hr.Application.Services.implementation;
+using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
 using Hr.Infrastructure.Data;
+using Hr.Infrastructure.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +23,30 @@ namespace Hr.System
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ApplicationDbContext>(option =>
                 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddIdentity<Employee, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddIdentity<Employee, IdentityRole>(
+                option =>
+                {
+                    option.Password.RequireNonAlphanumeric = false;
+                    option.Password.RequiredLength = 5;
+                }
+
+                ).AddEntityFrameworkStores<ApplicationDbContext>();
+            
+
+             //builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+
+
+
+            //CORS configration
+            builder.Services.AddCors(corsOptions => {
+                corsOptions.AddPolicy("MyPolicy", corsPolicyBuilder =>
+                {
+                    corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -31,12 +57,12 @@ namespace Hr.System
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             app.UseAuthorization();
 
 
             app.MapControllers();
-
+            DbInitializer.Configure(app);
             app.Run();
         }
     }
