@@ -9,6 +9,7 @@ namespace Hr.Application.Interfaces
     public interface IUnitOfWork
     {
         IDepartmentRepository DepartmentRepository { get; }
+        IRoleRepository RoleRepository {get;}
         int Save();
     }
 }

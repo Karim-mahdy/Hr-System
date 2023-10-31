@@ -13,11 +13,13 @@ namespace Hr.Infrastructure.Repository
         private readonly ApplicationDbContext context;
 
         public IDepartmentRepository DepartmentRepository { get; private set; }
+        public IRoleRepository RoleRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;
             DepartmentRepository = new DepartmentRepository(context);
+            RoleRepository = new RoleRepository(context);
         }
         public int Save()
         {

@@ -1,9 +1,11 @@
+using Hr.Application.Common.Filter;
 using Hr.Application.Interfaces;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
 using Hr.Infrastructure.Data;
 using Hr.Infrastructure.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,12 +35,18 @@ namespace Hr.System
                 ).AddEntityFrameworkStores<ApplicationDbContext>();
             
 
-             //builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+             
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+            builder.Services.AddScoped<IRoleService, RoleService>();
 
-
-
+            //Filter  Permission // Authorization Services
+            builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+            builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+            builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                options.ValidationInterval = TimeSpan.Zero;
+            });
             //CORS configration
             builder.Services.AddCors(corsOptions => {
                 corsOptions.AddPolicy("MyPolicy", corsPolicyBuilder =>
@@ -58,6 +66,7 @@ namespace Hr.System
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

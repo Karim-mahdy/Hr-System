@@ -10,8 +10,4 @@
     <ProjectReference Include="..\Hr.Domain\Hr.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Common\Filter\" />
-  </ItemGroup>
-
 </Project>
