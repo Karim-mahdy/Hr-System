@@ -9,6 +9,6 @@ namespace Hr.Application.Interfaces
 {
     public interface IEmployeeRepository: IRepository<Employee>
     {
-
+        void Update(Employee employee);
     }
 }

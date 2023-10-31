@@ -1,4 +1,4 @@
-﻿using Hr.Application.DTO;
+﻿using Hr.Application.DTOs;
 using Hr.Domain.Entities;
 using System;
 using System.Collections.Generic;

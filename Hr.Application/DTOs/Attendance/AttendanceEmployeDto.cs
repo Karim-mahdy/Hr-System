@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hr.Application.DTO
+namespace Hr.Application.DTOs
 {
     public class AttendanceEmployeDto
     {

@@ -17,5 +17,10 @@ namespace Hr.Infrastructure.Repository
         {
             this.context = context;
         }
+
+        public void Update(Employee employee)
+        {
+           context.Employees.Update(employee);
+        }
     }
 }

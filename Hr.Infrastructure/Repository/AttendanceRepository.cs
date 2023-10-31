@@ -21,7 +21,7 @@ namespace Hr.Infrastructure.Repository
             this.context = context;
         }
 
-        public void Update(Attendance attendance)
+        public void update(Attendance attendance)
         {
             context.Attendances.Update(attendance);
         }

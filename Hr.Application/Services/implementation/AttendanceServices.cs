@@ -1,4 +1,4 @@
-﻿using Hr.Application.DTO;
+﻿using Hr.Application.DTOs;
 using Hr.Application.Interfaces;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
@@ -14,10 +14,10 @@ namespace Hr.Application.Services.implementation
 {
     public class AttendanceServices : IAttendanceServices
     {
-        private readonly IUniteOfWork uniteOfWork;
+        private readonly IUnitOfWork uniteOfWork;
         private readonly IEmployeeServices employeeServices;
 
-        public AttendanceServices(IUniteOfWork uniteOfWork,IEmployeeServices employeeServices)
+        public AttendanceServices(IUnitOfWork uniteOfWork,IEmployeeServices employeeServices)
         {
             this.uniteOfWork = uniteOfWork;
             this.employeeServices = employeeServices;
@@ -25,7 +25,7 @@ namespace Hr.Application.Services.implementation
 
         public void CreateAttendance(AttendanceEmployeDto attendanceDto)
         {
-            var employees = employeeServices.GetAllEmployee();
+            var employees = employeeServices.GetAllEmployeeAttendance();
             attendanceDto.EmployeeList = employees.Select(employee => new SelectListItem
             {
                 Value = employee.ID.ToString(),
@@ -41,8 +41,8 @@ namespace Hr.Application.Services.implementation
             };
             if(attendance != null )
             {
-                uniteOfWork.attendanceRepository.Add(attendance);
-                uniteOfWork.save();
+                uniteOfWork.AttendanceRepository.Add(attendance);
+                uniteOfWork.Save();
             }
             else
             {
@@ -53,7 +53,7 @@ namespace Hr.Application.Services.implementation
 
         public AttendanceEmployeDto GetAttendanceById(int id)
         {
-           var attendance= uniteOfWork.attendanceRepository.Get(x=>x.Id == id);
+           var attendance= uniteOfWork.AttendanceRepository.Get(x=>x.Id == id);
             if(attendance != null)
             {
                 var attendanceDto = new AttendanceEmployeDto()
@@ -77,12 +77,12 @@ namespace Hr.Application.Services.implementation
         public IEnumerable<AttendanceEmployeDto> GetAllAttendance()
         {
             var attendanceDto = new List<AttendanceEmployeDto>();
-            var attendances = uniteOfWork.attendanceRepository.GetAll();
+            var attendances = uniteOfWork.AttendanceRepository.GetAll();
             if(attendances != null )
             {
                 foreach (var attendance in attendances)
                 {
-                    var employee = employeeServices.GetById(attendance.EmployeeId);
+                    var employee = employeeServices.GetAttendanceById(attendance.EmployeeId);
                     var employeAttendance = new AttendanceEmployeDto()
                     {
                         Id= attendance.Id,
@@ -105,27 +105,24 @@ namespace Hr.Application.Services.implementation
 
         public void UpdateAttendance(AttendanceEmployeDto attendanceDto,int id)
         {
-            var attadanceFromDb = uniteOfWork.attendanceRepository.Get(x => x.Id == id);
-            if(attadanceFromDb != null )
+            var attendanceFromDb = uniteOfWork.AttendanceRepository.Get(x => x.Id == id);
+            if(attendanceFromDb != null )
             {
-                var employees = employeeServices.GetAllEmployee();
+                var employees = employeeServices.GetAllEmployeeAttendance();
                 var employeeList = employees.Select(employee => new SelectListItem
                 {
                     Value = employee.ID.ToString(),
                     Text = employee.Name,
                     Selected = (employee.ID == attendanceDto.SelectedEmployee)
                 });
-                var attendance = new Attendance()
-                {
-                    Id = attendanceDto.Id,
-                    Date = attendanceDto.Date,
-                    ArrivalTime = attendanceDto.ArrivalTime,
-                    LeaveTime = attendanceDto.LeaveTime,
-                    Absent = false,
-                    EmployeeId = attendanceDto.SelectedEmployee
-                };
-                uniteOfWork.attendanceRepository.Update(attendance);
-                uniteOfWork.save();
+
+                attendanceFromDb.Date = attendanceDto.Date;
+                attendanceFromDb.ArrivalTime = attendanceDto.ArrivalTime;
+                attendanceFromDb.LeaveTime = attendanceDto.LeaveTime;
+                attendanceFromDb.Absent = false;
+                attendanceFromDb.EmployeeId = attendanceDto.SelectedEmployee;
+                uniteOfWork.AttendanceRepository.update(attendanceFromDb);
+                uniteOfWork.Save();
             }
             else
             {
@@ -136,11 +133,11 @@ namespace Hr.Application.Services.implementation
 
         public bool DeleteAttendance(int id)
         {
-            var attandence= uniteOfWork.attendanceRepository.Get( x => x.Id == id);
+            var attandence= uniteOfWork.AttendanceRepository.Get( x => x.Id == id);
             if( attandence != null )
             {
-                uniteOfWork.attendanceRepository.Remove(attandence);
-                uniteOfWork.save();
+                uniteOfWork.AttendanceRepository.Remove(attandence);
+                uniteOfWork.Save();
                 return true;
             }
             else
@@ -152,7 +149,7 @@ namespace Hr.Application.Services.implementation
 
         public (int BonusHours, int DiscountHours) CalculateBonusAndDiscountHours(int employeeId, int month)
         {
-            return uniteOfWork.attendanceRepository.CalculateBonusAndDiscountHours(employeeId, month);
+            return uniteOfWork.AttendanceRepository.CalculateBonusAndDiscountHours(employeeId, month);
         }
 
     }

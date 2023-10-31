@@ -1,5 +1,5 @@
-﻿using Hr.Application.DTO;
-using Hr.Application.DTO.Employee;
+﻿using Hr.Application.DTOs;
+using Hr.Application.DTOs.Employee;
 using Hr.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,21 @@ namespace Hr.Application.Services.Interfaces
 {
     public interface IEmployeeServices
     {
-        IEnumerable<GetAllEmployeDto> GetAllEmployee();
-        GetAllEmployeDto GetById(string id);
+        #region Employee Attendance 
+        IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeAttendance();
+        GetAllEmployeAttendanceDto GetAttendanceById(string id);
+
+        #endregion
+
+
+        #region Employee
+        IEnumerable<GetAllEmployeeDto> GetAllEmployee();
+        GetAllEmployeeDto GetEmployeetId(string id);
+        void CreateEmploye(GetAllEmployeeDto EmployeeDto);
+        void UpdateEmploye(GetAllEmployeeDto EmployeeDto, string id);
+        bool CheckEmployeeExists(GetAllEmployeeDto EmployeeDto);
+        void Remove(string id);
+
+        #endregion
     }
 }

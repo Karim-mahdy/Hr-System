@@ -1,4 +1,4 @@
-﻿using Hr.Application.DTO;
+﻿using Hr.Application.DTOs;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Http;

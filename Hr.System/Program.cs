@@ -10,6 +10,7 @@ using Hr.Infrastructure.Data;
 using Hr.Infrastructure.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Hr.System.Mapping;
 
 namespace Hr.System
 {
@@ -40,8 +41,9 @@ namespace Hr.System
              //builder.Services.AddScoped<IDbInitializer, DbInitializer>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-
-
+            builder.Services.AddScoped<IAttendanceServices, AttendanceServices>();
+            builder.Services.AddScoped<IEmployeeServices, EmployeeServices>();
+            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
             //CORS configration
             builder.Services.AddCors(corsOptions => {
@@ -50,19 +52,6 @@ namespace Hr.System
                     corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
-
-            builder.Services.AddIdentity<Employee, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
-
-
-            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            builder.Services.AddScoped<IUniteOfWork, UniteOfWork>();
-            builder.Services.AddScoped<IAttendanceServices, AttendanceServices>();
-            builder.Services.AddScoped<IEmployeeServices, EmployeeServices>();
-
-
-
-
-
 
             var app = builder.Build();
 
