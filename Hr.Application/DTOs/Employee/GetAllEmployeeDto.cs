@@ -1,0 +1,62 @@
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Hr.Application.DTOs.Employee
+{
+    public class GetAllEmployeeDto
+    {
+        public string? ID { get; set; }
+        [DisplayName("First Name")]
+        [Required(ErrorMessage = "First Name is required.")]
+        public string FirstName { get; set; }
+
+        [DisplayName("Last Name")]
+        [Required(ErrorMessage = "Last Name is required.")]
+        public string LastName { get; set; }
+        [Required(ErrorMessage = "Country is required.")]
+        [MaxLength(30, ErrorMessage = "Country cannot exceed 50 characters.")]
+        public string Country { get; set; }
+
+        [Required(ErrorMessage = "City is required.")]
+        [MaxLength(30, ErrorMessage = "City cannot exceed 50 characters.")]
+        public string City { get; set; }
+
+        [Required(ErrorMessage = "Gender is required.")]
+        [StringLength(30, ErrorMessage = "Gender must be a single character.")]
+        public string Gender { get; set; }
+
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        public DateTime BirthDate { get; set; }
+
+        public string Nationality { get; set; }
+        [StringLength(14, MinimumLength = 14, ErrorMessage = "National ID must be exactly 14 characters.")]
+        public string NationalId { get; set; }
+
+
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        public DateTime HireDate { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Salary must be a positive value.")]
+        public double Salary { get; set; }
+
+        [Required(ErrorMessage = "Arrival Time is required.")]
+        [DataType(DataType.Time)]
+        public TimeSpan ArrivalTime { get; set; }
+
+        [Required(ErrorMessage = "Leave Time is required.")]
+        [DataType(DataType.Time)]
+        public TimeSpan LeaveTime { get; set; }
+        public int? DepartmentId { get; set; }
+        public string? DeptName { get; set; }
+        public IEnumerable<SelectListItem>? DepartmentList { get; set; } = Enumerable.Empty<SelectListItem>();
+
+    }
+}

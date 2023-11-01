@@ -3,6 +3,10 @@ using Hr.Application.Common.Filter;
 using Hr.Application.Interfaces;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
+
+using Hr.Application.Interfaces;
+using Hr.Application.Services.implementation;
+using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
 using Hr.Infrastructure.Data;
 using Hr.Infrastructure.Repository;
@@ -10,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Hr.System.Mapping;
+
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -44,6 +50,10 @@ namespace Hr.System
              
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+            builder.Services.AddScoped<IAttendanceServices, AttendanceServices>();
+            builder.Services.AddScoped<IEmployeeServices, EmployeeServices>();
+            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
             builder.Services.AddScoped<IRoleService, RoleService>();
 
             //Filter Permission // Authorization Services

@@ -15,10 +15,15 @@ namespace Hr.Infrastructure.Repository
         public IDepartmentRepository DepartmentRepository { get; private set; }
         public IRoleRepository RoleRepository { get; private set; }
 
+        public IAttendanceRepository AttendanceRepository { get; private set; }
+        public IEmployeeRepository EmployeeRepository { get; private set; }
+
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;
             DepartmentRepository = new DepartmentRepository(context);
+            AttendanceRepository = new AttendanceRepository(context);
+            EmployeeRepository = new EmployeeRepository(context);
             RoleRepository = new RoleRepository(context);
         }
         public int Save()
