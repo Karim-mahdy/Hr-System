@@ -1,6 +1,8 @@
-﻿using Hr.Application.DTOs.Department;
+﻿using Hr.Application.Common.Global;
+using Hr.Application.DTOs.Department;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +18,12 @@ namespace Hr.System.Controllers
         {
             this.departmentService = departmentService;
         }
-
+        [Authorize(Permission.Department.View)]
         [HttpGet]
         public ActionResult GetAll()
         {
             var allDepartments = departmentService.GetAllDepartment();
-            if (allDepartments != null && allDepartments.Any())
+            if (allDepartments != null )
             {
                 var departmentDTOs = allDepartments.Select(department => new DepartmentDTO
                 {
@@ -106,7 +108,7 @@ namespace Hr.System.Controllers
             return Ok(updatedDTO);
         }
 
-
+        [Authorize(Permission.Department.Delete)]
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {

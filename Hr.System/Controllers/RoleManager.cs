@@ -113,13 +113,17 @@ namespace Hr.System.Controllers
         {
             try
             {
+                int counter = 0;
                 foreach (var claim in model.RoleClaims)
                 {
                     if (!claim.IsSeleced)
                     {
-                        ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
+                        counter++;
                     }
+                   
                 }
+                if (counter == 24)
+                    ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
 
                 if (!ModelState.IsValid)
                 {
@@ -162,13 +166,18 @@ namespace Hr.System.Controllers
                 {
                     return NotFound();
                 }
+                int counter = 0;
                 foreach (var claim in model.RoleClaims)
                 {
                     if (!claim.IsSeleced)
                     {
-                        ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
+                        counter++;
                     }
+                     
                 }
+                if (counter == 24)
+                    ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
+
                 var roleClaim = await roleManager.GetClaimsAsync(role);
                 foreach (var claim in roleClaim)
                 {
