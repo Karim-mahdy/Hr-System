@@ -82,7 +82,7 @@ namespace Hr.Application.Services.implementation
             EmployeeDto.DepartmentList= department.Select(dept=> new SelectListItem
             {
                 Value = dept.Id.ToString(),
-                Text = dept.DeptName
+                Text = dept.Name
             });
             var empDto = new Employee
             {
@@ -186,7 +186,7 @@ namespace Hr.Application.Services.implementation
                 var employeeList = department.Select(dept => new SelectListItem
                 {
                     Value = dept.Id.ToString(),
-                    Text = dept.DeptName,
+                    Text = dept.Name,
                     Selected = (dept.Id == EmployeeDto.DepartmentId)
                 });
                 employeFromDb.Id = EmployeeDto.ID;

@@ -14,7 +14,7 @@ namespace Hr.Application.DTOs.Department
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Department name is required.")]
-        [StringLength(100, MinimumLength = 2, ErrorMessage = "Department name must be between 2 and 100 characters.")]
+        [StringLength(30, MinimumLength = 2, ErrorMessage = "Department name must be between 2 and 30 characters.")]
         public string Name { get; set; }
 
 

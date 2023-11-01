@@ -1,4 +1,5 @@
 ﻿using Hr.Application.DTOs.Department;
+using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
 using Microsoft.AspNetCore.Http;
@@ -20,108 +21,105 @@ namespace Hr.System.Controllers
         [HttpGet]
         public ActionResult GetAll()
         {
-            var allDepartments = departmentService.GetAllDepartment();
-            if (allDepartments != null && allDepartments.Any())
+            try
             {
-                var departmentDTOs = allDepartments.Select(department => new DepartmentDTO
-                {
-                    Id = department.Id,
-                    Name = department.DeptName
-                }).ToList();
+                var Department = departmentService.GetAllDepartment();
 
-                return Ok(departmentDTOs);
+                return Ok(Department);
             }
-            return NotFound();
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+            }
         }
         [HttpGet("{id}")]
         public ActionResult Get(int id)
         {
-            var department = departmentService.GetDepartmentId(id);
-
-            if (department != null)
+            try
             {
-                var departmentDTO = new DepartmentDTO
-                {
-                    Id = department.Id,
-                    Name = department.DeptName
-                };
-
-                return Ok(departmentDTO);
+                departmentService.GetDepartmentId(id);
+                return Ok("Department is founded");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
 
-            return NotFound();
         }
 
         [HttpPost]
         public ActionResult Create([FromBody] DepartmentDTO departmentDTO)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest("Invalid department data");
+                if (ModelState.IsValid)
+                {
+                    if (departmentService.CheckDepartmentExists(departmentDTO))
+                    {
+                        ModelState.AddModelError("DeptName", "Deptartment Name is founded ");
+                        return BadRequest(ModelState);
+                    }
+                    if (ModelState.IsValid)
+                    {
+                        departmentService.Create(departmentDTO);
+                        return Ok("Department Added  Successfully");
+                    }
+                    return BadRequest("Invalid department data");
+                }
+                else
+                {
+
+                    return BadRequest("Invalid department data");
+                }
             }
-
-            var department = new Department
+            catch (Exception ex)
             {
-                DeptName = departmentDTO.Name
-            };
-
-            departmentService.Create(department);
-
-            // Return the created department as a DTO with the generated ID
-            var createdDTO = new DepartmentDTO
-            {
-                Id = department.Id,
-                Name = department.DeptName
-            };
-
-            return CreatedAtAction("Get", new { id = createdDTO.Id }, createdDTO);
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+            }
         }
 
+
+
+
         [HttpPut("{id}")]
-        public ActionResult  Edit(int id, [FromBody] DepartmentDTO updatedDepartmentDTO)
+        public ActionResult Edit(int id, [FromBody] DepartmentDTO updatedDepartmentDTO)
         {
-            var existingDepartment = departmentService.GetDepartmentId(id);
-
-            if (existingDepartment == null)
+            try
             {
-                return NotFound();
-            }
+                if (departmentService.CheckDepartmentExists(updatedDepartmentDTO))
+                {
+                    ModelState.AddModelError("DeptName", "Deptartment Name is founded ");
+                    return BadRequest(ModelState);
+                }
+                if (ModelState.IsValid)
+                {
+                    departmentService.Update(updatedDepartmentDTO);
+                    return Ok("Department Updated  Successfully");
+                }
 
-            if (updatedDepartmentDTO == null)
-            {
                 return BadRequest("Invalid department data");
             }
-             
-            existingDepartment.DeptName = updatedDepartmentDTO.Name;
-             
-            departmentService.Update(existingDepartment);
-
-            // Return the updated  department 
-            var updatedDTO = new DepartmentDTO
+            catch(Exception ex)
             {
-                Id = existingDepartment.Id,
-                Name = existingDepartment.DeptName
-            };
-
-            return Ok(updatedDTO);
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+            }
         }
 
 
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var department = departmentService.GetDepartmentId(id);
-
-            if (department == null)
+            try
             {
-                return NotFound();
+                 departmentService.Remove(id);
+                return Ok(" Department Has Delete");
             }
-            
-            departmentService.Remove(department);
-
-            return NoContent();  
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+            }
         }
 
-        
+
     }
 }
