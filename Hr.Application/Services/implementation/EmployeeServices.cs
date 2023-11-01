@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿
 using Hr.Application.DTOs;
 using Hr.Application.DTOs.Employee;
 using Hr.Application.Interfaces;
@@ -20,12 +20,12 @@ namespace Hr.Application.Services.implementation
         private readonly IUnitOfWork uniteOfWork;
         private readonly IDepartmentService departmentService;
 
-        public IMapper _mapper { get; }
+       
 
-        public EmployeeServices(IUnitOfWork uniteOfWork, IMapper mapper,IDepartmentService departmentService)
+        public EmployeeServices(IUnitOfWork uniteOfWork,  IDepartmentService departmentService)
         {
             this.uniteOfWork = uniteOfWork;
-            _mapper = mapper;
+            
             this.departmentService = departmentService;
         }
 

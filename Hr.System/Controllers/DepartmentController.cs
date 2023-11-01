@@ -36,6 +36,7 @@ namespace Hr.System.Controllers
             {
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
+            return NotFound();
         }
         [HttpGet("{id}")]
         public ActionResult Get(int id)
