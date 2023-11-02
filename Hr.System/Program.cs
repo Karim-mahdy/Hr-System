@@ -45,7 +45,6 @@ namespace Hr.System
                 ).AddEntityFrameworkStores<ApplicationDbContext>();
             
 
-             
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<IAttendanceServices, AttendanceServices>();
@@ -63,7 +62,7 @@ namespace Hr.System
             });
 
             //[Authoriz] used JWT Token in Chck Authantiaction
-         
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

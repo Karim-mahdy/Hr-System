@@ -2,6 +2,7 @@
 using Hr.Application.Interfaces;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +59,7 @@ namespace Hr.Application.Services.implementation
             }
             else
             {
-                throw new Exception("Not found Department");
+                return null;
             }
         }
 

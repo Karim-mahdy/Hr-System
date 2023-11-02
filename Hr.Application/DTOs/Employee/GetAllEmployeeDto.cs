@@ -48,15 +48,16 @@ namespace Hr.Application.DTOs.Employee
         public double Salary { get; set; }
 
         [Required(ErrorMessage = "Arrival Time is required.")]
-        [DataType(DataType.Time)]
-        public TimeSpan ArrivalTime { get; set; }
+        [RegularExpression(@"^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$", ErrorMessage = "Arrival Time must be in the format 'hh:mm:ss'.")]
+        public string ArrivalTime { get; set; }
 
         [Required(ErrorMessage = "Leave Time is required.")]
-        [DataType(DataType.Time)]
-        public TimeSpan LeaveTime { get; set; }
-        public int? DepartmentId { get; set; }
+        [RegularExpression(@"^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$", ErrorMessage = "Leave Time must be in the format 'hh:mm:ss'.")]
+        public string LeaveTime { get; set; }
+
+        public int DepartmentId { get; set; }
         public string? DeptName { get; set; }
-        public IEnumerable<SelectListItem>? DepartmentList { get; set; } = Enumerable.Empty<SelectListItem>();
+       
 
     }
 }

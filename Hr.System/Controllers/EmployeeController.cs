@@ -11,11 +11,11 @@ namespace Hr.System.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmployeController : ControllerBase
+    public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeServices employeeServices;
 
-        public EmployeController(IEmployeeServices employeeServices)
+        public EmployeeController(IEmployeeServices employeeServices)
         {
 
             this.employeeServices = employeeServices;
@@ -35,6 +35,7 @@ namespace Hr.System.Controllers
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
+
         [HttpGet("{id}")]
         public IActionResult GetById(string id)
         {
@@ -57,12 +58,15 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    if (EmployeeDto == null || EmployeeDto.LeaveTime < EmployeeDto.ArrivalTime || EmployeeDto.LeaveTime == EmployeeDto.ArrivalTime)
+                    if (EmployeeDto == null ||
+                        !TimeSpan.TryParse(EmployeeDto.ArrivalTime, out TimeSpan arrivalTime) ||
+                        !TimeSpan.TryParse(EmployeeDto.LeaveTime, out TimeSpan leaveTime) ||
+                         arrivalTime >= leaveTime)
                     {
                         ModelState.AddModelError("LeaveTime", "Leave time cannot be before or equal to arrival time.");
                         return BadRequest(ModelState);
                     }
-                    if(employeeServices.CheckEmployeeExists(EmployeeDto))
+                    if (employeeServices.CheckEmployeeExists(EmployeeDto))
                     {
                         ModelState.AddModelError("FirstName", "First Name and Last Name is founded ");
                         return BadRequest(ModelState);
@@ -73,7 +77,7 @@ namespace Hr.System.Controllers
                 }
                 else
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(EmployeeDto);
                 }
             }
             catch (Exception ex)
@@ -89,16 +93,24 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    if (employeeDto == null ||
+                      !TimeSpan.TryParse(employeeDto.ArrivalTime, out TimeSpan arrivalTime) ||
+                      !TimeSpan.TryParse(employeeDto.LeaveTime, out TimeSpan leaveTime) ||
+                       arrivalTime >= leaveTime)
+                    {
+                        ModelState.AddModelError("LeaveTime", "Leave time cannot be before or equal to arrival time.");
+                        return BadRequest(ModelState);
+                    }
                     if (employeeServices.GetAllEmployee().Any(
-                  x => x.FirstName.ToLower() == employeeDto.FirstName.ToLower()
-                  && x.LastName.ToLower() == employeeDto.LastName.ToLower() &&
-                  x.ID != employeeDto.ID))
+                        x => x.FirstName.ToLower() == employeeDto.FirstName.ToLower()
+                        && x.LastName.ToLower() == employeeDto.LastName.ToLower() &&
+                        x.ID != employeeDto.ID))
                     {
                         ModelState.AddModelError("FirstName", "the name is founded plz enter another name");
                         return BadRequest(ModelState);
                     }
                     employeeServices.UpdateEmploye(employeeDto, id);
-                    return Ok("Employee record updated successfully.");
+                    return Ok(employeeDto);
                 }
                 return BadRequest(ModelState);
             }
@@ -107,7 +119,9 @@ namespace Hr.System.Controllers
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
+
         [HttpDelete("{id}")]
+
         public IActionResult Delete(string id)
         {
             try

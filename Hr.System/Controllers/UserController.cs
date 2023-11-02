@@ -39,7 +39,7 @@ namespace Hr.System.Controllers
         {
             try
             {
-                var users = await userManager.Users.Where(x => x.UserName != "Admin@gmail.com").ToListAsync();
+                var users = await userManager.Users.Where(x => x.UserName != SD.AdminUserName).ToListAsync();
                 if (users != null)
                 {
                     var userRoleDto = new List<UserWithRoleDto>();
@@ -89,9 +89,10 @@ namespace Hr.System.Controllers
                 EmployeeName = user.FirstName + " " + user.LastName,
                 UserName = user.UserName,
                 Email = user.Email,
+                Password = user.PasswordHash,
                 userRoles = userRoles,
                 selectRolesIds= roleIds,
-                Roles = GetRolesList(),
+                Roles = GetRolesListExceptUserRoles(user.Id),
             };
 
             return Ok(UserDto);
@@ -102,14 +103,15 @@ namespace Hr.System.Controllers
         {
             try
             {
+                var roles =  GetRolesList();
+                var employees = await GetUserSelectListWithoutRoles();
                 var UserDto = new UserRoleFromDto
                 {
                     UserName = "",
                     Email = "",
                     Password = "",
-                    Roles = GetRolesList(),
-                    Employees = GetUserSelectList()
-
+                    Roles = roles.ToList(),
+                    Employees = employees.ToList()
                 };
                 return Ok(UserDto);
             }
@@ -120,8 +122,9 @@ namespace Hr.System.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser(UserRoleFromDto model)
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser(UserRoleFromDto model)
         {
             using (var transaction = context.Database.BeginTransaction())
             {
@@ -132,14 +135,27 @@ namespace Hr.System.Controllers
                     {
                         return NotFound();
                     }
+
                     user.UserName = model.UserName;
                     user.Email = model.Email;
-                   
-
-                    var result = await userManager.CreateAsync(user, model.Password);
+                    user.PasswordHash = model.Password;
+                    var result = await userManager.UpdateAsync(user);
 
                     if (result.Succeeded)
                     {
+                        // Check if the NewPassword is provided and not empty
+                        //if (!string.IsNullOrWhiteSpace(model.Password))
+                        //{
+                        //    var changePasswordResult = await userManager.ChangePasswordAsync(user, null, model.Password);
+
+                        //    if (!changePasswordResult.Succeeded)
+                        //    {
+                        //        // Handle password change failure
+                        //        transaction.Rollback();
+                        //        return BadRequest("Failed to change the user's password");
+                        //    }
+                        //}
+
                         var selectedRoles = await roleManager.Roles
                             .Where(role => model.selectRolesIds.Contains(role.Id))
                             .ToListAsync();
@@ -154,7 +170,7 @@ namespace Hr.System.Controllers
 
                             if (addRolesResult.Succeeded)
                             {
-                                transaction.Commit();  
+                                transaction.Commit();
                                 return Ok("User roles updated successfully");
                             }
                         }
@@ -168,75 +184,30 @@ namespace Hr.System.Controllers
             }
         }
 
-        [HttpPut("EditUser")]
-        public async Task<IActionResult> EditUser(UserRoleFromDto model)
-        {
-            using (var transaction = context.Database.BeginTransaction())
-            {
-                if (ModelState.IsValid)
-                {
-                    var user = await userManager.FindByIdAsync(model.selectEmployeeId);
-                    if (user == null)
-                    {
-                        return NotFound();
-                    }
-
-                    user.UserName = model.UserName;
-                    user.Email = model.Email;
-
-                    // To update the user's password, use the ChangePasswordAsync method.
-                    if (!string.IsNullOrEmpty(model.Password))
-                    {
-                        var token = await userManager.GeneratePasswordResetTokenAsync(user);
-                        var result = await userManager.ResetPasswordAsync(user, token, model.Password);
-
-                        if (!result.Succeeded)
-                        {
-                            transaction.Rollback();
-                            return BadRequest("Failed to update the user's password");
-                        }
-                    }
-
-                    var selectedRoles = await roleManager.Roles
-                        .Where(role => model.selectRolesIds.Contains(role.Id))
-                        .ToListAsync();
-
-                    // Remove existing roles
-                    var userRoles = await userManager.GetRolesAsync(user);
-                    var removeRolesResult = await userManager.RemoveFromRolesAsync(user, userRoles);
-
-                    if (removeRolesResult.Succeeded)
-                    {
-                        var addRolesResult = await userManager.AddToRolesAsync(user, selectedRoles.Select(role => role.Name));
-
-                        if (addRolesResult.Succeeded)
-                        {
-                            transaction.Commit();
-                            return Ok("User roles updated successfully");
-                        }
-                    }
-
-                    // If any step fails, roll back the transaction.
-                    transaction.Rollback();
-                }
-
-                return BadRequest("Failed to edit user or update user roles");
-            }
-        }
+        
 
         [HttpPost("RemoveRolesFromUser")]
-        public async Task<IActionResult> RemoveRolesFromUser(string userId, List<string> roleNames)
+        public async Task<IActionResult> RemoveRolesFromUser(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return NotFound("User not found");
             }
+           
 
-            var result = await userManager.RemoveFromRolesAsync(user, roleNames);
-
+            // Remove the email and password
+            user.Email = null;
+            user.PasswordHash = null;
+            
+            var roles = await userManager.GetRolesAsync(user); // Get the user's current roles as role names
+            var result = await userManager.RemoveFromRolesAsync(user, roles); // Remove the roles
+             
             if (result.Succeeded)
             {
+                // Update the user's roles and password
+                await userManager.UpdateAsync(user);
+
                 return Ok("Roles removed successfully");
             }
 
@@ -252,14 +223,70 @@ namespace Hr.System.Controllers
                 Text = role.Name
             });
         }
-        private IEnumerable<SelectListItem> GetUserSelectList()
+        
+        private IEnumerable<SelectListItem> GetRolesListExceptUserRoles(string currentUserId)
         {
-            return userManager.Users.Where(x => x.UserName != "Admin@gmail.com").Select(x => new SelectListItem
-            {
-                Text = $"{x.FirstName} {x.LastName}",
-                Value = x.Id
-            }).ToList();
+            var currentUserRoles = userManager.GetRolesAsync(userManager.FindByIdAsync(currentUserId).Result).Result;
+
+            var rolesWithoutCurrentUserRoles = roleManager.Roles
+                .Where(role => !currentUserRoles.Contains(role.Name))
+                .Select(role => new SelectListItem
+                {
+                    Value = role.Id,
+                    Text = role.Name
+                });
+
+            return rolesWithoutCurrentUserRoles;
         }
+
+
+        //private IEnumerable<SelectListItem> GetUserSelectListWithoutRoles()
+        //{
+        //    var usersWithRoles = userManager.Users.Where(user => userManager.GetRolesAsync(user).Result.Any()).ToList();
+
+        //    var allUsers = userManager.Users
+        //        .Where(x => x.UserName != SD.AdminUserName)
+        //        .Except(usersWithRoles)
+        //        .Select(x => new SelectListItem
+        //        {
+        //            Text = $"{x.FirstName} {x.LastName}",
+        //            Value = x.Id
+        //        })
+        //        .ToList();
+
+        //    return allUsers;
+        //}
+
+
+        private async Task<IEnumerable<SelectListItem>> GetUserSelectListWithoutRoles()
+        {
+            // Retrieve users with roles
+            var usersWithRoles = (await userManager.Users.ToListAsync())
+                .Where(user => userManager.GetRolesAsync(user).Result.Any())
+                .ToList();
+
+            // Retrieve all users
+            var allUsers = await userManager.Users
+                .Where(x => x.UserName != SD.AdminUserName)
+                .ToListAsync();
+
+            // Filter users without roles
+            var usersWithoutRoles = allUsers
+                .Where(x => !usersWithRoles.Any(u => u.Id == x.Id))
+                .Select(x => new SelectListItem
+                {
+                    Text = $"{x.FirstName} {x.LastName}",
+                    Value = x.Id
+                })
+                .ToList();
+
+            return usersWithoutRoles;
+        }
+
+
+
+
+
 
 
 

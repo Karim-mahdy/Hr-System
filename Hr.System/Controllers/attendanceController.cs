@@ -8,11 +8,11 @@ namespace Hr.System.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class attendanceController : ControllerBase
+    public class AttendanceController : ControllerBase
     {
         private readonly IAttendanceServices attendanceServices;
 
-        public attendanceController(IAttendanceServices attendanceServices) 
+        public AttendanceController(IAttendanceServices attendanceServices) 
         {
             this.attendanceServices = attendanceServices;
         }

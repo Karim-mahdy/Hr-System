@@ -20,33 +20,40 @@ namespace Hr.System.Controllers
         {
             this.departmentService = departmentService;
         }
-        [Authorize(Permission.Department.View)]
+
         [HttpGet]
         public ActionResult GetAll()
         {
-            var allDepartments = departmentService.GetAllDepartment();
-            if (allDepartments != null )
             try
             {
-                var Department = departmentService.GetAllDepartment();
+                var allDepartments = departmentService.GetAllDepartment();
+                if (allDepartments != null)
+                {
+                    var Department = departmentService.GetAllDepartment();
 
-                return Ok(Department);
+                    return Ok(Department);
+                }
+                return NotFound();
             }
+
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
-            return NotFound();
         }
         [HttpGet("{id}")]
         public ActionResult Get(int id)
         {
             try
             {
-                departmentService.GetDepartmentId(id);
-                return Ok("Department is founded");
+                var department = departmentService.GetDepartmentId(id);
+                if (department != null)
+                {
+                    return Ok(department);
+                }
+                return NotFound();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
@@ -68,7 +75,7 @@ namespace Hr.System.Controllers
                     if (ModelState.IsValid)
                     {
                         departmentService.Create(departmentDTO);
-                        return Ok("Department Added  Successfully");
+                        return Ok(departmentDTO);
                     }
                     return BadRequest("Invalid department data");
                 }
@@ -92,32 +99,33 @@ namespace Hr.System.Controllers
         {
             try
             {
-                if (departmentService.CheckDepartmentExists(updatedDepartmentDTO))
-                {
-                    ModelState.AddModelError("DeptName", "Deptartment Name is founded ");
-                    return BadRequest(ModelState);
-                }
                 if (ModelState.IsValid)
                 {
+                    if (departmentService.GetAllDepartment().Any(
+                        x => x.Name.ToLower() == updatedDepartmentDTO.Name.ToLower() && x.Id != updatedDepartmentDTO.Id))
+                    {
+                        ModelState.AddModelError("DeptName", "Deptartment Name is founded ");
+                        return BadRequest(ModelState);
+                    }
+
                     departmentService.Update(updatedDepartmentDTO);
-                    return Ok("Department Updated  Successfully");
+                    return Ok(updatedDepartmentDTO);
                 }
 
                 return BadRequest("Invalid department data");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
 
-        [Authorize(Permission.Department.Delete)]
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
             try
             {
-                 departmentService.Remove(id);
+                departmentService.Remove(id);
                 return Ok(" Department Has Delete");
             }
             catch (Exception ex)

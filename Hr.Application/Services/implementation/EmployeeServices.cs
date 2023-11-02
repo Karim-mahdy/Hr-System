@@ -1,4 +1,5 @@
 ﻿
+using Hr.Application.Common;
 using Hr.Application.DTOs;
 using Hr.Application.DTOs.Employee;
 using Hr.Application.Interfaces;
@@ -39,7 +40,7 @@ namespace Hr.Application.Services.implementation
                 var emp = new GetAllEmployeAttendanceDto()
                 {
                     ID = employee.Id,
-                    Name = employee.FirstName + " " + employee.LastName,
+                    Name = employee.FirstName + " " + employee.LastName, 
                 };
                 listOfEmployee.Add(emp);
             }
@@ -67,54 +68,17 @@ namespace Hr.Application.Services.implementation
       
         #endregion
 
-
-
         #region Employe
 
         public bool CheckEmployeeExists(GetAllEmployeeDto EmployeeDto)
         {
-          return  uniteOfWork.EmployeeRepository.Any(x => x.FirstName.ToLower() == EmployeeDto.FirstName.ToLower() && x.LastName.ToLower() == EmployeeDto.LastName.ToLower()&& x.DepartmentId==EmployeeDto.DepartmentId);
-        }
-
-        public void CreateEmploye(GetAllEmployeeDto EmployeeDto)
-        {
-            var department = departmentService.GetAllDepartment();
-            EmployeeDto.DepartmentList= department.Select(dept=> new SelectListItem
-            {
-                Value = dept.Id.ToString(),
-                Text = dept.Name
-            });
-            var empDto = new Employee
-            {
-                FirstName = EmployeeDto.FirstName,
-                LastName = EmployeeDto.LastName,
-                ArrivalTime = EmployeeDto.ArrivalTime,
-                LeaveTime = EmployeeDto.LeaveTime,
-                BirthDate = EmployeeDto.BirthDate,
-                City = EmployeeDto.City,
-                Country = EmployeeDto.Country,
-                Gender = EmployeeDto.Gender,
-                HireDate = EmployeeDto.HireDate,
-                NationalId = EmployeeDto.NationalId,
-                Nationality = EmployeeDto.Nationality,
-                Salary = EmployeeDto.Salary,
-                DepartmentId = EmployeeDto.DepartmentId,
-            };
-            if (empDto != null)
-            {
-                uniteOfWork.EmployeeRepository.Add(empDto);
-                uniteOfWork.Save();
-            }
-            else
-            {
-                throw new Exception("Employee is error");
-            }
+          return  uniteOfWork.EmployeeRepository.Any(x => x.FirstName.ToLower() == EmployeeDto.FirstName.ToLower() && x.LastName.ToLower() == EmployeeDto.LastName.ToLower() && x.DepartmentId==EmployeeDto.DepartmentId);
         }
 
         public IEnumerable<GetAllEmployeeDto> GetAllEmployee()
         {
-           var EmployeeList= new List<GetAllEmployeeDto>();
-            var employees = uniteOfWork.EmployeeRepository.GetAll(includeProperties: "Department");
+            var EmployeeList = new List<GetAllEmployeeDto>();
+            var employees = uniteOfWork.EmployeeRepository.GetAll(x => x.UserName != SD.AdminUserName, includeProperties: "Department");
             if (employees != null)
             {
                 foreach (var emp in employees)
@@ -124,8 +88,8 @@ namespace Hr.Application.Services.implementation
                         ID = emp.Id,
                         FirstName = emp.FirstName,
                         LastName = emp.LastName,
-                        ArrivalTime = emp.ArrivalTime,
-                        LeaveTime = emp.LeaveTime,
+                        ArrivalTime = emp.ArrivalTime.ToString("hh\\:mm"), // Convert TimeSpan to string
+                        LeaveTime = emp.LeaveTime.ToString("hh\\:mm"), // Convert TimeSpan to string
                         BirthDate = emp.BirthDate,
                         City = emp.City,
                         Country = emp.Country,
@@ -146,29 +110,67 @@ namespace Hr.Application.Services.implementation
                 return Enumerable.Empty<GetAllEmployeeDto>();
             }
         }
+
+
+        public void CreateEmploye(GetAllEmployeeDto EmployeeDto)
+        {
+            try
+            {
+                TimeSpan arrivalTime = TimeSpan.Parse(EmployeeDto.ArrivalTime);
+                TimeSpan leaveTime = TimeSpan.Parse(EmployeeDto.LeaveTime);
+                var empDto = new Employee
+                {
+                    FirstName = EmployeeDto.FirstName,
+                    LastName = EmployeeDto.LastName,
+                    ArrivalTime = arrivalTime,
+                    LeaveTime = leaveTime,
+                    BirthDate = EmployeeDto.BirthDate,
+                    City = EmployeeDto.City,
+                    Country = EmployeeDto.Country,
+                    Gender = EmployeeDto.Gender,
+                    HireDate = EmployeeDto.HireDate,
+                    NationalId = EmployeeDto.NationalId,
+                    Nationality = EmployeeDto.Nationality,
+                    Salary = EmployeeDto.Salary,
+                    DepartmentId = EmployeeDto.DepartmentId,
+                };
+
+                uniteOfWork.EmployeeRepository.Add(empDto);
+                uniteOfWork.Save();
+
+            }
+            catch (Exception)
+            {
+
+                throw new Exception("Employee is error");
+            }
+            
+           
+        }
+
         public GetAllEmployeeDto GetEmployeetId(string id)
         {
-            var employees = uniteOfWork.EmployeeRepository.Get(x=>x.Id==id, includeProperties: "Department");
+            var employees = uniteOfWork.EmployeeRepository.Get(x => x.Id == id, includeProperties: "Department");
             if (employees != null)
             {
-                    var emps = new GetAllEmployeeDto()
-                    {
-                        ID = employees.Id,
-                        FirstName = employees.FirstName,
-                        LastName = employees.LastName,
-                        ArrivalTime = employees.ArrivalTime,
-                        LeaveTime = employees.LeaveTime,
-                        BirthDate = employees.BirthDate,
-                        City = employees.City,
-                        Country = employees.Country,
-                        Gender = employees.Gender,
-                        HireDate = employees.HireDate,
-                        NationalId = employees.NationalId,
-                        Nationality = employees.Nationality,
-                        Salary = employees.Salary,
-                        DepartmentId = employees.DepartmentId,
-                        DeptName = employees.Department.DeptName
-                    };
+                var emps = new GetAllEmployeeDto()
+                {
+                    ID = employees.Id,
+                    FirstName = employees.FirstName,
+                    LastName = employees.LastName,
+                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
+                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
+                    BirthDate = employees.BirthDate,
+                    City = employees.City,
+                    Country = employees.Country,
+                    Gender = employees.Gender,
+                    HireDate = employees.HireDate,
+                    NationalId = employees.NationalId,
+                    Nationality = employees.Nationality,
+                    Salary = employees.Salary,
+                    DepartmentId = employees.DepartmentId,
+                    DeptName = employees.Department.DeptName
+                };
                 return emps;
             }
             else
@@ -179,39 +181,42 @@ namespace Hr.Application.Services.implementation
 
         public void UpdateEmploye(GetAllEmployeeDto EmployeeDto, string id)
         {
-            var employeFromDb = uniteOfWork.EmployeeRepository.Get(x => x.Id == id, includeProperties: "Department");
-            if (employeFromDb != null)
+            try
             {
-                var department = departmentService.GetAllDepartment();
-                var employeeList = department.Select(dept => new SelectListItem
+                var employeFromDb = uniteOfWork.EmployeeRepository.Get(x => x.Id == id );
+                if (employeFromDb != null)
                 {
-                    Value = dept.Id.ToString(),
-                    Text = dept.Name,
-                    Selected = (dept.Id == EmployeeDto.DepartmentId)
-                });
-                employeFromDb.Id = EmployeeDto.ID;
-                employeFromDb.FirstName = EmployeeDto.FirstName;
-                employeFromDb.LastName = EmployeeDto.LastName;
-                employeFromDb.ArrivalTime = EmployeeDto.ArrivalTime;
-                employeFromDb.LeaveTime = EmployeeDto.LeaveTime;
-                employeFromDb.BirthDate = EmployeeDto.BirthDate;
-                employeFromDb.City = EmployeeDto.City;
-                employeFromDb.Country = EmployeeDto.Country;
-                employeFromDb.Gender = EmployeeDto.Gender;
-                employeFromDb.HireDate = EmployeeDto.HireDate;
-                employeFromDb.NationalId = EmployeeDto.NationalId;
-                employeFromDb.Nationality = EmployeeDto.Nationality;
-                employeFromDb.Salary = EmployeeDto.Salary;
-                employeFromDb.DepartmentId = EmployeeDto.DepartmentId;
+                    TimeSpan arrivalTime = TimeSpan.Parse(EmployeeDto.ArrivalTime);
+                    TimeSpan leaveTime = TimeSpan.Parse(EmployeeDto.LeaveTime);
 
-                uniteOfWork.EmployeeRepository.Update(employeFromDb);
-                uniteOfWork.Save();
+                    employeFromDb.Id = EmployeeDto.ID;
+                    employeFromDb.FirstName = EmployeeDto.FirstName;
+                    employeFromDb.LastName = EmployeeDto.LastName;
+                    employeFromDb.ArrivalTime = arrivalTime; // Use the parsed TimeSpan
+                    employeFromDb.LeaveTime = leaveTime; // Use the parsed TimeSpan
+                    employeFromDb.BirthDate = EmployeeDto.BirthDate;
+                    employeFromDb.City = EmployeeDto.City;
+                    employeFromDb.Country = EmployeeDto.Country;
+                    employeFromDb.Gender = EmployeeDto.Gender;
+                    employeFromDb.HireDate = EmployeeDto.HireDate;
+                    employeFromDb.NationalId = EmployeeDto.NationalId;
+                    employeFromDb.Nationality = EmployeeDto.Nationality;
+                    employeFromDb.Salary = EmployeeDto.Salary;
+                    employeFromDb.DepartmentId = EmployeeDto.DepartmentId;
+                    uniteOfWork.EmployeeRepository.Update(employeFromDb);
+                    uniteOfWork.Save();
+                }
+                else
+                {
+                    throw new Exception("Not found");
+                }
             }
-            else
+            catch (Exception)
             {
-                throw new Exception("Not found");
+                throw new Exception("Employee is error");
             }
         }
+
 
         public void Remove(string id)
         {
