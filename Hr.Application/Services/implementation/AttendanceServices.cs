@@ -28,7 +28,7 @@ namespace Hr.Application.Services.implementation
             var employees = employeeServices.GetAllEmployeeAttendance();
             attendanceDto.EmployeeList = employees.Select(employee => new SelectListItem
             {
-                Value = employee.ID.ToString(),
+                Value = employee.Id.ToString(),
                 Text = employee.Name 
             });
             var attendance = new Attendance()
@@ -86,7 +86,7 @@ namespace Hr.Application.Services.implementation
                     var employeAttendance = new AttendanceEmployeDto()
                     {
                         Id= attendance.Id,
-                        SelectedEmployee = employee.ID.ToString(),
+                        SelectedEmployee = employee.Id,
                         Date = attendance.Date,
                         ArrivalTime = attendance.ArrivalTime,
                         LeaveTime = attendance.LeaveTime,
@@ -111,9 +111,9 @@ namespace Hr.Application.Services.implementation
                 var employees = employeeServices.GetAllEmployeeAttendance();
                 var employeeList = employees.Select(employee => new SelectListItem
                 {
-                    Value = employee.ID.ToString(),
+                    Value = employee.Id.ToString(),
                     Text = employee.Name,
-                    Selected = (employee.ID == attendanceDto.SelectedEmployee)
+                    Selected = (employee.Id == attendanceDto.SelectedEmployee)
                 });
 
                 attendanceFromDb.Date = attendanceDto.Date;

@@ -6,6 +6,7 @@ using Hr.Application.Interfaces;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
@@ -20,14 +21,16 @@ namespace Hr.Application.Services.implementation
     {
         private readonly IUnitOfWork uniteOfWork;
         private readonly IDepartmentService departmentService;
+        private readonly UserManager<ApplicationUser> userManager;
 
-       
-
-        public EmployeeServices(IUnitOfWork uniteOfWork,  IDepartmentService departmentService)
+        public EmployeeServices(IUnitOfWork uniteOfWork,  
+            IDepartmentService departmentService 
+            ,UserManager<ApplicationUser> userManager)
         {
             this.uniteOfWork = uniteOfWork;
             
             this.departmentService = departmentService;
+            this.userManager = userManager;
         }
 
         #region Employee Attendance
@@ -39,7 +42,7 @@ namespace Hr.Application.Services.implementation
             {
                 var emp = new GetAllEmployeAttendanceDto()
                 {
-                    ID = employee.Id,
+                    Id = employee.Id,
                     Name = employee.FirstName + " " + employee.LastName, 
                 };
                 listOfEmployee.Add(emp);
@@ -47,7 +50,7 @@ namespace Hr.Application.Services.implementation
             return listOfEmployee;
         }
 
-        public GetAllEmployeAttendanceDto GetAttendanceById(string id)
+        public GetAllEmployeAttendanceDto GetAttendanceById(int id)
         {
             var employee = uniteOfWork.EmployeeRepository.Get(x => x.Id == id);
             if(employee == null)
@@ -58,14 +61,14 @@ namespace Hr.Application.Services.implementation
             {
                 var empDto = new GetAllEmployeAttendanceDto()
                 {
-                    ID = employee.Id,
+                    Id = employee.Id,
                     Name = employee.FirstName+" "+ employee.LastName,
                 };
                 return empDto;
             }
         }
 
-      
+       
         #endregion
 
         #region Employe
@@ -78,7 +81,7 @@ namespace Hr.Application.Services.implementation
         public IEnumerable<GetAllEmployeeDto> GetAllEmployee()
         {
             var EmployeeList = new List<GetAllEmployeeDto>();
-            var employees = uniteOfWork.EmployeeRepository.GetAll(x => x.UserName != SD.AdminUserName, includeProperties: "Department");
+            var employees = uniteOfWork.EmployeeRepository.GetAll(includeProperties: "Department");
             if (employees != null)
             {
                 foreach (var emp in employees)
@@ -88,8 +91,8 @@ namespace Hr.Application.Services.implementation
                         ID = emp.Id,
                         FirstName = emp.FirstName,
                         LastName = emp.LastName,
-                        ArrivalTime = emp.ArrivalTime.ToString("hh\\:mm"), // Convert TimeSpan to string
-                        LeaveTime = emp.LeaveTime.ToString("hh\\:mm"), // Convert TimeSpan to string
+                        ArrivalTime = emp.ArrivalTime.ToString("hh\\:mm\\:ss"), // Convert TimeSpan to string
+                        LeaveTime = emp.LeaveTime.ToString("hh\\:mm\\:ss"), // Convert TimeSpan to string
                         BirthDate = emp.BirthDate,
                         City = emp.City,
                         Country = emp.Country,
@@ -111,8 +114,38 @@ namespace Hr.Application.Services.implementation
             }
         }
 
-
-        public void CreateEmploye(GetAllEmployeeDto EmployeeDto)
+        public GetAllEmployeeDto GetEmployeeByUserId(string userId)
+        {
+            var employees = uniteOfWork.EmployeeRepository.Get(x => x.UserId == userId, includeProperties: "Department");
+            if (employees != null)
+            {
+                var emps = new GetAllEmployeeDto()
+                {
+                    ID = employees.Id,
+                    UserId = employees.UserId,
+                    FirstName = employees.FirstName,
+                    LastName = employees.LastName,
+                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
+                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
+                    BirthDate = employees.BirthDate,
+                    City = employees.City,
+                    Country = employees.Country,
+                    Gender = employees.Gender,
+                    HireDate = employees.HireDate,
+                    NationalId = employees.NationalId,
+                    Nationality = employees.Nationality,
+                    Salary = employees.Salary,
+                    DepartmentId = employees.DepartmentId,
+                    DeptName = employees.Department.DeptName
+                };
+                return emps;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void CreateEmployee(GetAllEmployeeDto EmployeeDto)
         {
             try
             {
@@ -148,7 +181,7 @@ namespace Hr.Application.Services.implementation
            
         }
 
-        public GetAllEmployeeDto GetEmployeetId(string id)
+        public GetAllEmployeeDto GetEmployeeId(int id)
         {
             var employees = uniteOfWork.EmployeeRepository.Get(x => x.Id == id, includeProperties: "Department");
             if (employees != null)
@@ -158,8 +191,8 @@ namespace Hr.Application.Services.implementation
                     ID = employees.Id,
                     FirstName = employees.FirstName,
                     LastName = employees.LastName,
-                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
-                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
+                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
+                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
                     BirthDate = employees.BirthDate,
                     City = employees.City,
                     Country = employees.Country,
@@ -179,7 +212,7 @@ namespace Hr.Application.Services.implementation
             }
         }
 
-        public void UpdateEmploye(GetAllEmployeeDto EmployeeDto, string id)
+        public void UpdateEmployee(GetAllEmployeeDto EmployeeDto, int id)
         {
             try
             {
@@ -203,6 +236,7 @@ namespace Hr.Application.Services.implementation
                     employeFromDb.Nationality = EmployeeDto.Nationality;
                     employeFromDb.Salary = EmployeeDto.Salary;
                     employeFromDb.DepartmentId = EmployeeDto.DepartmentId;
+                    employeFromDb.UserId = EmployeeDto.UserId;
                     uniteOfWork.EmployeeRepository.Update(employeFromDb);
                     uniteOfWork.Save();
                 }
@@ -218,14 +252,36 @@ namespace Hr.Application.Services.implementation
         }
 
 
-        public void Remove(string id)
+        public void Remove(int id)
         {
-           var emp = uniteOfWork.EmployeeRepository.Get(x=>x.Id==id);
-            uniteOfWork.EmployeeRepository.Remove(emp);
-            uniteOfWork.Save();
+            var emp = uniteOfWork.EmployeeRepository.Get(x => x.Id == id);
+
+            if (emp != null)
+            {
+                var userId = emp.UserId;
+                uniteOfWork.EmployeeRepository.Remove(emp);
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = userManager.FindByIdAsync(userId).Result;
+                    if (user != null)
+                    {
+                        var result = userManager.DeleteAsync(user).Result;
+
+                        if (result.Succeeded)
+                        {
+                            uniteOfWork.Save();
+                        }
+                    }
+                }
+                else
+                {
+                    uniteOfWork.Save();
+                }
+            }
         }
 
-     
+
         #endregion
 
 

@@ -8,7 +8,7 @@ namespace Hr.Application.DTOs.Employee
 {
     public class GetAllEmployeAttendanceDto
     {
-        public string ID { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; } 
     }
 }

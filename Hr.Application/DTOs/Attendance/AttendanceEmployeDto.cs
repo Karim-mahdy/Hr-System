@@ -23,7 +23,7 @@ namespace Hr.Application.DTOs
         [DataType(DataType.Time)]
         public TimeSpan LeaveTime { get; set; }
         public bool? Absent { get; set; }=true;
-        public string? SelectedEmployee { get; set; }
+        public int SelectedEmployee { get; set; }
         public string? EmployeeName { get; set; }
 
         public IEnumerable<SelectListItem>? EmployeeList { get; set; } = Enumerable.Empty<SelectListItem>();

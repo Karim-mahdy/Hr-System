@@ -3,10 +3,6 @@ using Hr.Application.Common.Filter;
 using Hr.Application.Interfaces;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
-
-using Hr.Application.Interfaces;
-using Hr.Application.Services.implementation;
-using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
 using Hr.Infrastructure.Data;
 using Hr.Infrastructure.Repository;
@@ -35,14 +31,16 @@ namespace Hr.System
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ApplicationDbContext>(option =>
                 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddIdentity<Employee, IdentityRole>(
+            
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
                 option =>
                 {
                     option.Password.RequireNonAlphanumeric = false;
                     option.Password.RequiredLength = 5;
                 }
 
-                ).AddEntityFrameworkStores<ApplicationDbContext>();
+                ).AddEntityFrameworkStores<ApplicationDbContext>()
+                 .AddDefaultTokenProviders(); ;
             
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -53,13 +51,7 @@ namespace Hr.System
 
             builder.Services.AddScoped<IRoleService, RoleService>();
 
-            //Filter Permission // Authorization Services
-            builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
-            builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
-            builder.Services.Configure<SecurityStampValidatorOptions>(options =>
-            {
-                options.ValidationInterval = TimeSpan.Zero;
-            });
+            
 
             //[Authoriz] used JWT Token in Chck Authantiaction
 
@@ -80,6 +72,13 @@ namespace Hr.System
                     ValidAudience = builder.Configuration["JWT:ValidAudiance"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
                 };
+            });
+            //Filter Permission // Authorization Services
+            builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+            builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+            builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                options.ValidationInterval = TimeSpan.Zero;
             });
 
             //CORS configration

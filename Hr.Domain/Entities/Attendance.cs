@@ -21,7 +21,7 @@ namespace Hr.Domain.Entities
 
         // Navigation property to Employee
         [ForeignKey("Employee")]
-        public string EmployeeId { get; set; }
+        public int EmployeeId { get; set; }
         public Employee Employee { get; set; }
     }
 }

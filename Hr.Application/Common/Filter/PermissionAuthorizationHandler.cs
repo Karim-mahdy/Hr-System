@@ -19,7 +19,7 @@ namespace Hr.Application.Common.Filter
         {
             if (context.User == null)
                 return;
-
+          
             var canAccess = context.User.Claims.Any(c => c.Type == "Permission" && c.Value == requirement.Permission && c.Issuer == "LOCAL AUTHORITY");
 
             if (canAccess)

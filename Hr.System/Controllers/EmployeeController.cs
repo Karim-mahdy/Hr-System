@@ -37,11 +37,11 @@ namespace Hr.System.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(string id)
+        public IActionResult GetById(int id)
         {
             try
             {
-                var EmployeDto = employeeServices.GetEmployeetId(id);
+                var EmployeDto = employeeServices.GetEmployeeId(id);
 
                 return Ok(EmployeDto);
             }
@@ -71,7 +71,7 @@ namespace Hr.System.Controllers
                         ModelState.AddModelError("FirstName", "First Name and Last Name is founded ");
                         return BadRequest(ModelState);
                     }
-                    employeeServices.CreateEmploye(EmployeeDto);
+                    employeeServices.CreateEmployee(EmployeeDto);
 
                     return Ok("Employe record created successfully.");
                 }
@@ -87,7 +87,7 @@ namespace Hr.System.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(GetAllEmployeeDto employeeDto, string id)
+        public IActionResult Update(GetAllEmployeeDto employeeDto, int id)
         {
             try
             {
@@ -109,7 +109,7 @@ namespace Hr.System.Controllers
                         ModelState.AddModelError("FirstName", "the name is founded plz enter another name");
                         return BadRequest(ModelState);
                     }
-                    employeeServices.UpdateEmploye(employeeDto, id);
+                    employeeServices.UpdateEmployee(employeeDto, id);
                     return Ok(employeeDto);
                 }
                 return BadRequest(ModelState);
@@ -122,7 +122,7 @@ namespace Hr.System.Controllers
 
         [HttpDelete("{id}")]
 
-        public IActionResult Delete(string id)
+        public IActionResult Delete(int id)
         {
             try
             {

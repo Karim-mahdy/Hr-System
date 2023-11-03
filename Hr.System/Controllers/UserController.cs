@@ -1,6 +1,7 @@
 ﻿using Hr.Application.Common;
 using Hr.Application.DTOs.User;
 using Hr.Application.Services.implementation;
+using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
 using Hr.Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
@@ -17,42 +18,55 @@ namespace Hr.System.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserManager<Employee> userManager;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IRoleService roleService;
         private readonly ApplicationDbContext context;
+        private readonly IEmployeeServices employeeService;
 
-        public UserController(UserManager<Employee> userManager,
+        public UserController(UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IRoleService roleService,
-            ApplicationDbContext context)
+            ApplicationDbContext context ,
+            IEmployeeServices employeeService
+            )
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.roleService = roleService;
             this.context = context;
+            this.employeeService = employeeService;
         }
 
-        
+
         [HttpGet]
         public async Task<ActionResult> GetAllUsers()
         {
             try
             {
                 var users = await userManager.Users.Where(x => x.UserName != SD.AdminUserName).ToListAsync();
+
                 if (users != null)
                 {
                     var userRoleDto = new List<UserWithRoleDto>();
+
                     foreach (var user in users)
                     {
                         var roles = await userManager.GetRolesAsync(user);
-                        var userDto = new UserWithRoleDto
-                        {
+                        var employee = employeeService.GetEmployeeByUserId(user.Id);
 
-                            User = $"{user.FirstName} {user.LastName}",
-                            Roles = roles.ToList()
-                        };
-                        userRoleDto.Add(userDto);
+                        if (employee != null)
+                        {
+                            var userDto = new UserWithRoleDto
+                            {
+                                FullName = $"{employee.FirstName} {employee.LastName}",
+                                UserName = user.UserName,
+                                Email = user.Email,
+                                Password = user.PasswordHash,
+                                Roles = roles.ToList()
+                            };
+                            userRoleDto.Add(userDto);
+                        }
                     }
 
                     return Ok(userRoleDto);
@@ -65,38 +79,53 @@ namespace Hr.System.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-        
+
         [HttpGet("GetUserById")]
         public async Task<IActionResult> GetUserById(string userId)
         {
+           
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound(); // Return an error response if the user is not found.
+                return NotFound(); 
             }
-
+            // Retrieve the roles associated with the user
             var roles = await userManager.GetRolesAsync(user);
-            var userRoles = roleManager.Roles
-                            .Where(r => roles.Contains(r.Name))
-                            .Select(r => new IdentityRole { Id = r.Id, Name = r.Name })
-                            .ToList();
 
-            //get all roles for user
-            var roleIds = roles.Select(roleName => roleManager.Roles.SingleOrDefault(r => r.Name == roleName)?.Id).ToList();
-            var UserDto = new UserRoleFromDto
+            var employee = employeeService.GetEmployeeByUserId(userId);
+
+            if (employee != null)
             {
-                selectEmployeeId = user.Id,
-                EmployeeName = user.FirstName + " " + user.LastName,
-                UserName = user.UserName,
-                Email = user.Email,
-                Password = user.PasswordHash,
-                userRoles = userRoles,
-                selectRolesIds= roleIds,
-                Roles = GetRolesListExceptUserRoles(user.Id),
-            };
+                // Map user's roles to IdentityRole objects
+                var userRoles = roleManager.Roles
+                    .Where(r => roles.Contains(r.Name))
+                    .Select(r => new IdentityRole { Id = r.Id, Name = r.Name })
+                    .ToList();
 
-            return Ok(UserDto);
+                // Get all role IDs for the user
+                var roleIds = roles.Select(roleName => roleManager.Roles.SingleOrDefault(r => r.Name == roleName)?.Id).ToList();
+
+                // Create a DTO  with user and role information
+                var UserDto = new UserRoleFromDto
+                {
+                    EmpId = employee.ID,
+                    UserId = user.Id,
+                    EmployeeName = $"{employee.FirstName} {employee.LastName}",
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Password = user.PasswordHash,
+                    userRoles = userRoles,
+                    selectRolesIds = roleIds,
+                    Roles = GetRolesListExceptUserRoles(user.Id),
+                };
+                return Ok(UserDto);
+            }
+            else
+            {         
+                return NotFound("Employee not found for the user.");
+            }
         }
+
 
         [HttpGet("GetToCreate")]
         public async Task<IActionResult> GetToCreate()
@@ -107,6 +136,8 @@ namespace Hr.System.Controllers
                 var employees = await GetUserSelectListWithoutRoles();
                 var UserDto = new UserRoleFromDto
                 {
+
+                    EmpId = 0,
                     UserName = "",
                     Email = "",
                     Password = "",
@@ -122,57 +153,41 @@ namespace Hr.System.Controllers
             }
         }
 
-
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser(UserRoleFromDto model)
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(UserRoleFromDto model)
         {
             using (var transaction = context.Database.BeginTransaction())
             {
                 if (ModelState.IsValid)
                 {
-                    var user = await userManager.FindByIdAsync(model.selectEmployeeId);
-                    if (user == null)
+                    var user = new ApplicationUser
                     {
-                        return NotFound();
-                    }
+                        UserName = model.UserName,
+                        Email = model.Email
+                    };
 
-                    user.UserName = model.UserName;
-                    user.Email = model.Email;
                     user.PasswordHash = model.Password;
-                    var result = await userManager.UpdateAsync(user);
+                    
+                    var result = await userManager.CreateAsync(user);
+                    
 
                     if (result.Succeeded)
                     {
-                        // Check if the NewPassword is provided and not empty
-                        //if (!string.IsNullOrWhiteSpace(model.Password))
-                        //{
-                        //    var changePasswordResult = await userManager.ChangePasswordAsync(user, null, model.Password);
+                        var emp = employeeService.GetEmployeeId(model.EmpId);
+                        emp.UserId = user.Id;
+                        employeeService.UpdateEmployee(emp,emp.ID);
 
-                        //    if (!changePasswordResult.Succeeded)
-                        //    {
-                        //        // Handle password change failure
-                        //        transaction.Rollback();
-                        //        return BadRequest("Failed to change the user's password");
-                        //    }
-                        //}
 
                         var selectedRoles = await roleManager.Roles
                             .Where(role => model.selectRolesIds.Contains(role.Id))
                             .ToListAsync();
 
-                        // Remove existing roles
-                        var userRoles = await userManager.GetRolesAsync(user);
-                        var removeRolesResult = await userManager.RemoveFromRolesAsync(user, userRoles);
+                        var addRolesResult = await userManager.AddToRolesAsync(user, selectedRoles.Select(role => role.Name));
 
-                        if (removeRolesResult.Succeeded)
+                        if (addRolesResult.Succeeded)
                         {
-                            var addRolesResult = await userManager.AddToRolesAsync(user, selectedRoles.Select(role => role.Name));
-
-                            if (addRolesResult.Succeeded)
-                            {
-                                transaction.Commit();
-                                return Ok("User roles updated successfully");
-                            }
+                            transaction.Commit();
+                            return Ok("User created successfully");
                         }
                     }
 
@@ -180,38 +195,93 @@ namespace Hr.System.Controllers
                     transaction.Rollback();
                 }
 
-                return BadRequest("Failed to create user or update user roles");
+                return BadRequest("Failed to create the user or assign user roles");
             }
         }
 
-        
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser(UserRoleFromDto model)
+        {
+             
+                using (var transaction = context.Database.BeginTransaction())
+                {
+                    if (ModelState.IsValid)
+                    {
+                        var user = await userManager.FindByIdAsync(model.UserId);
+                        if (user == null)
+                        {
+                            return NotFound();
+                        }
 
-        [HttpPost("RemoveRolesFromUser")]
-        public async Task<IActionResult> RemoveRolesFromUser(string userId)
+                        user.UserName = model.UserName;
+                        user.Email = model.Email;
+                        user.PasswordHash = model.Password;
+                        var result = await userManager.UpdateAsync(user);
+
+                        if (result.Succeeded)
+                        {
+
+
+                            var selectedRoles = await roleManager.Roles
+                                .Where(role => model.selectRolesIds.Contains(role.Id))
+                                .ToListAsync();
+
+                            // Remove existing roles
+                            var userRoles = await userManager.GetRolesAsync(user);
+                            var removeRolesResult = await userManager.RemoveFromRolesAsync(user, userRoles);
+
+                            if (removeRolesResult.Succeeded)
+                            {
+                                var addRolesResult = await userManager.AddToRolesAsync(user, selectedRoles.Select(role => role.Name));
+
+                                if (addRolesResult.Succeeded)
+                                {
+                                    transaction.Commit();
+                                    return Ok("User roles updated successfully");
+                                }
+                            }
+                        }
+
+                        // If any step fails, roll back the transaction.
+                        transaction.Rollback();
+                    }
+
+                    return BadRequest("Failed to create user or update user roles");
+                }
+ 
+        }
+
+
+        [HttpPost("RemoveUser")]
+        public async Task<IActionResult> RemoveUser(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return NotFound("User not found");
             }
-           
-
-            // Remove the email and password
-            user.Email = null;
-            user.PasswordHash = null;
-            
-            var roles = await userManager.GetRolesAsync(user); // Get the user's current roles as role names
-            var result = await userManager.RemoveFromRolesAsync(user, roles); // Remove the roles
-             
-            if (result.Succeeded)
+            try
             {
-                // Update the user's roles and password
-                await userManager.UpdateAsync(user);
+                // Remove the user from ASP.NET Identity
+                var result = await userManager.DeleteAsync(user);
 
-                return Ok("Roles removed successfully");
+                if (result.Succeeded)
+                {
+                      
+                    var emp = employeeService.GetEmployeeByUserId(userId);
+                    emp.UserId =null;
+                    employeeService.UpdateEmployee(emp, emp.ID);
+                   
+                    return Ok("User removed and associated Employee updated.");
+                }
+
+                return BadRequest("Failed to remove the user.");
             }
-
-            return BadRequest("Failed to remove roles from the user");
+            catch (Exception ex)
+            {
+                // Handle any exceptions
+                return StatusCode(500, ex.Message);
+            }
         }
 
 
@@ -239,55 +309,58 @@ namespace Hr.System.Controllers
             return rolesWithoutCurrentUserRoles;
         }
 
-
-        //private IEnumerable<SelectListItem> GetUserSelectListWithoutRoles()
+        //private async Task<IEnumerable<SelectListItem>> GetUserSelectListWithoutRoles()
         //{
-        //    var usersWithRoles = userManager.Users.Where(user => userManager.GetRolesAsync(user).Result.Any()).ToList();
+        //    // Retrieve users with roles
+        //    var usersWithRoles = (await userManager.Users.ToListAsync())
+        //        .Where(user => userManager.GetRolesAsync(user).Result.Any())
+        //        .ToList();
 
-        //    var allUsers = userManager.Users
+        //    // Retrieve all users
+        //    var allUsers = await userManager.Users
         //        .Where(x => x.UserName != SD.AdminUserName)
-        //        .Except(usersWithRoles)
-        //        .Select(x => new SelectListItem
+        //        .ToListAsync();
+
+        //    // Filter users without roles and select their names
+        //    var usersWithoutRoles = allUsers
+        //        .Where(x => !usersWithRoles.Any(u => u.Id == x.Id))
+        //        .Select(x => $"{x.FirstName} {x.LastName}")
+        //        .ToList();
+
+        //    var selectListItems = usersWithoutRoles
+        //        .Select(userName => new SelectListItem
         //        {
-        //            Text = $"{x.FirstName} {x.LastName}",
-        //            Value = x.Id
+        //            Text = userName,
+        //            Value = userId // You'll need to replace 'userId' with the actual ID.
         //        })
         //        .ToList();
 
-        //    return allUsers;
+        //    return usersWithoutRoles;
         //}
 
 
         private async Task<IEnumerable<SelectListItem>> GetUserSelectListWithoutRoles()
         {
             // Retrieve users with roles
-            var usersWithRoles = (await userManager.Users.ToListAsync())
-                .Where(user => userManager.GetRolesAsync(user).Result.Any())
-                .ToList();
+            var usersWithRoles = (await userManager.Users.Where(user =>
+                userManager.GetRolesAsync(user).Result.Any()).ToListAsync());
 
-            // Retrieve all users
-            var allUsers = await userManager.Users
-                .Where(x => x.UserName != SD.AdminUserName)
-                .ToListAsync();
+            // Retrieve users without roles
+            var usersWithoutRoles = (await userManager.Users
+                .Where(user => user.UserName != SD.AdminUserName && !usersWithRoles.Any(u => u.Id == user.Id))
+                .ToListAsync());
 
-            // Filter users without roles
-            var usersWithoutRoles = allUsers
-                .Where(x => !usersWithRoles.Any(u => u.Id == x.Id))
-                .Select(x => new SelectListItem
+            // Create SelectListItem instances with user names
+            var selectListItems = usersWithoutRoles
+                .Select(user => new SelectListItem
                 {
-                    Text = $"{x.FirstName} {x.LastName}",
-                    Value = x.Id
+                    Text = $"{employeeService.GetEmployeeByUserId(user.Id).FirstName} {employeeService.GetEmployeeByUserId(user.Id).LastName}",
+                    Value = user.Id
                 })
                 .ToList();
 
-            return usersWithoutRoles;
+            return selectListItems;
         }
-
-
-
-
-
-
 
 
     }

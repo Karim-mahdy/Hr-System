@@ -24,12 +24,12 @@ namespace Hr.Infrastructure.Data
             using (var serviceScope = app.ApplicationServices.CreateScope())
             {
                 var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<Employee>>();
+                var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
                 await roleManager.SeedAdminRoleAsync();
                 await userManager.SeedAdminUserAsync(roleManager);
             }
-
+            
             // Other configuration code
         }
         public static async Task SeedAdminRoleAsync(this RoleManager<IdentityRole> roleManager)
@@ -37,9 +37,9 @@ namespace Hr.Infrastructure.Data
             await roleManager.CreateAsync(new IdentityRole(SD.Roles.SuperAdmin.ToString()));
         }
 
-        public static async Task SeedAdminUserAsync(this UserManager<Employee> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedAdminUserAsync(this UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            var adminUser = new Employee
+            var adminUser = new ApplicationUser
             {
                 UserName = SD.AdminUserName,
                 Email = SD.AdminUserName,
@@ -56,7 +56,7 @@ namespace Hr.Infrastructure.Data
             await roleManager.SeedClaimsToAdmin(adminUser);
         }
 
-        public static async Task SeedClaimsToAdmin(this RoleManager<IdentityRole> roleManager, Employee adminUser)
+        public static async Task SeedClaimsToAdmin(this RoleManager<IdentityRole> roleManager, ApplicationUser adminUser)
         {
             var adminRole = await roleManager.FindByNameAsync(SD.Roles.SuperAdmin.ToString());
             if (adminRole != null)

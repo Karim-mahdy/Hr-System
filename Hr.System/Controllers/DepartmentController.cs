@@ -1,6 +1,5 @@
 ﻿using Hr.Application.Common.Global;
 using Hr.Application.DTOs.Department;
-using Hr.Application.DTOs.Department;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
@@ -22,6 +21,7 @@ namespace Hr.System.Controllers
         }
 
         [HttpGet]
+     
         public ActionResult GetAll()
         {
             try
@@ -90,9 +90,6 @@ namespace Hr.System.Controllers
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
-
-
-
 
         [HttpPut("{id}")]
         public ActionResult Edit(int id, [FromBody] DepartmentDTO updatedDepartmentDTO)

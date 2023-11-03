@@ -1,5 +1,7 @@
-﻿using Hr.Application.DTOs.Authentication;
+﻿using Hr.Application.Common;
+using Hr.Application.DTOs.Authentication;
 using Hr.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +16,22 @@ namespace Hr.System.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly UserManager<Employee> userManager;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly IConfiguration config;
+        private readonly RoleManager<IdentityRole> roleManager;
+        private readonly SignInManager<ApplicationUser> signInManager;
 
-        public AuthenticationController(UserManager<Employee> userManager , IConfiguration config)
+        public AuthenticationController(UserManager<ApplicationUser> userManager , 
+            IConfiguration config , 
+            RoleManager<IdentityRole> roleManager
+            ,SignInManager<ApplicationUser> signInManager)
         {
             this.userManager = userManager;
             this.config = config;
+            this.roleManager = roleManager;
+            this.signInManager = signInManager;
         }
-
+        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginUserDto userDto)
         {
@@ -34,6 +43,7 @@ namespace Hr.System.Controllers
                     bool result = await userManager.CheckPasswordAsync(user, userDto.Password);
                     if (result)
                     {
+
                         //Claims Token
                         var claims = new List<Claim>();
                         claims.Add(new Claim(ClaimTypes.Name, userDto.UserName));
@@ -43,7 +53,20 @@ namespace Hr.System.Controllers
                         var roles = await userManager.GetRolesAsync(user);
                         foreach (var role in roles)
                         {
-                            claims.Add(new Claim(ClaimTypes.Role, role));
+                            if (role == SD.Roles.SuperAdmin.ToString())
+                            {
+                                claims.Add(new Claim(ClaimTypes.Role, role));
+                            }
+                            else
+                            {
+                                var permissions = await roleManager.GetClaimsAsync(await roleManager.FindByNameAsync(role));
+                                foreach (var permission in permissions)
+                                {
+                                    claims.Add(new Claim(permission.Type, permission.Value));
+                                }
+                               
+                            }
+                           
                         }
 
                         SecurityKey securityKey =
@@ -74,7 +97,15 @@ namespace Hr.System.Controllers
             }
             return Unauthorized();
         }
-      
 
+        [HttpPost("Logout")]
+        [Authorize]  
+        public async Task<IActionResult> Logout()
+        {
+            await signInManager.SignOutAsync();  
+            return NoContent();  
+        }
     }
+    
+
 }

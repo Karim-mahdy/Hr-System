@@ -11,7 +11,7 @@ namespace Hr.Application.DTOs.Employee
 {
     public class GetAllEmployeeDto
     {
-        public string? ID { get; set; }
+        public int ID { get; set; }
         [DisplayName("First Name")]
         [Required(ErrorMessage = "First Name is required.")]
         public string FirstName { get; set; }
@@ -36,8 +36,9 @@ namespace Hr.Application.DTOs.Employee
         public DateTime BirthDate { get; set; }
 
         public string Nationality { get; set; }
-        [StringLength(14, MinimumLength = 14, ErrorMessage = "National ID must be exactly 14 characters.")]
+        [RegularExpression(@"^\d{14}$", ErrorMessage = "National ID must be exactly 14 numeric characters.")]
         public string NationalId { get; set; }
+
 
 
         [DataType(DataType.Date)]
@@ -54,7 +55,7 @@ namespace Hr.Application.DTOs.Employee
         [Required(ErrorMessage = "Leave Time is required.")]
         [RegularExpression(@"^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$", ErrorMessage = "Leave Time must be in the format 'hh:mm:ss'.")]
         public string LeaveTime { get; set; }
-
+        public string? UserId { get; set; }
         public int DepartmentId { get; set; }
         public string? DeptName { get; set; }
        

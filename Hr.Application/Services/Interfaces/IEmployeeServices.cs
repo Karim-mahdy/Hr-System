@@ -13,18 +13,19 @@ namespace Hr.Application.Services.Interfaces
     {
         #region Employee Attendance 
         IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeAttendance();
-        GetAllEmployeAttendanceDto GetAttendanceById(string id);
+        GetAllEmployeAttendanceDto GetAttendanceById(int id);
 
         #endregion
 
 
         #region Employee
         IEnumerable<GetAllEmployeeDto> GetAllEmployee();
-        GetAllEmployeeDto GetEmployeetId(string id);
-        void CreateEmploye(GetAllEmployeeDto EmployeeDto);
-        void UpdateEmploye(GetAllEmployeeDto EmployeeDto, string id);
+        GetAllEmployeeDto GetEmployeeId(int id);
+        void CreateEmployee(GetAllEmployeeDto EmployeeDto);
+        void UpdateEmployee(GetAllEmployeeDto EmployeeDto, int id);
         bool CheckEmployeeExists(GetAllEmployeeDto EmployeeDto);
-        void Remove(string id);
+        void Remove(int id);
+        GetAllEmployeeDto GetEmployeeByUserId(string userId);
 
         #endregion
     }
