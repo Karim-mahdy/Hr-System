@@ -14,10 +14,16 @@ namespace Hr.Infrastructure.Repository
 
         public IDepartmentRepository DepartmentRepository { get; private set; }
 
+        public IPublicHolidaysRepository PublicHolidaysRepository { get; private set; }
+        public IWeekendRepository WeekendRepository { get; private set; }
+        public IGeneralSettingsRepository GeneralSettingsRepository { get; private set; }
         public UnitOfWork(ApplicationDbContext context)
         {
             this.context = context;
             DepartmentRepository = new DepartmentRepository(context);
+            PublicHolidaysRepository=new PublicHolidaysRepository(context);
+            WeekendRepository = new WeekendRepository(context);
+            GeneralSettingsRepository =new GeneralSettingsRepository(context);
         }
         public int Save()
         {

@@ -36,6 +36,9 @@ namespace Hr.System
              //builder.Services.AddScoped<IDbInitializer, DbInitializer>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+            builder.Services.AddScoped<IPublicHolidaysService, PublicHolidaysService>();
+            builder.Services.AddScoped<IWeekendService, WeekendService>();
+            builder.Services.AddScoped<IGeneralSettingsService, GeneralSettingsService>();
 
 
 
