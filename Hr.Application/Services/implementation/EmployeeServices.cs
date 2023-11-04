@@ -102,7 +102,9 @@ namespace Hr.Application.Services.implementation
                         Nationality = emp.Nationality,
                         Salary = emp.Salary,
                         DepartmentId = emp.DepartmentId,
-                        DeptName = emp.Department.DeptName
+                        DeptName = emp.Department.DeptName,
+                        UserId = emp.UserId
+                        
                     };
                     EmployeeList.Add(emps);
                 }

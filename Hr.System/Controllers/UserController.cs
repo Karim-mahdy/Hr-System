@@ -309,53 +309,15 @@ namespace Hr.System.Controllers
             return rolesWithoutCurrentUserRoles;
         }
 
-        //private async Task<IEnumerable<SelectListItem>> GetUserSelectListWithoutRoles()
-        //{
-        //    // Retrieve users with roles
-        //    var usersWithRoles = (await userManager.Users.ToListAsync())
-        //        .Where(user => userManager.GetRolesAsync(user).Result.Any())
-        //        .ToList();
-
-        //    // Retrieve all users
-        //    var allUsers = await userManager.Users
-        //        .Where(x => x.UserName != SD.AdminUserName)
-        //        .ToListAsync();
-
-        //    // Filter users without roles and select their names
-        //    var usersWithoutRoles = allUsers
-        //        .Where(x => !usersWithRoles.Any(u => u.Id == x.Id))
-        //        .Select(x => $"{x.FirstName} {x.LastName}")
-        //        .ToList();
-
-        //    var selectListItems = usersWithoutRoles
-        //        .Select(userName => new SelectListItem
-        //        {
-        //            Text = userName,
-        //            Value = userId // You'll need to replace 'userId' with the actual ID.
-        //        })
-        //        .ToList();
-
-        //    return usersWithoutRoles;
-        //}
-
-
         private async Task<IEnumerable<SelectListItem>> GetUserSelectListWithoutRoles()
         {
-            // Retrieve users with roles
-            var usersWithRoles = (await userManager.Users.Where(user =>
-                userManager.GetRolesAsync(user).Result.Any()).ToListAsync());
-
-            // Retrieve users without roles
-            var usersWithoutRoles = (await userManager.Users
-                .Where(user => user.UserName != SD.AdminUserName && !usersWithRoles.Any(u => u.Id == user.Id))
-                .ToListAsync());
-
-            // Create SelectListItem instances with user names
-            var selectListItems = usersWithoutRoles
+            var EmpolyeeWithoutUserAccess = employeeService.GetAllEmployee().Where(x => x.UserId == null);
+            
+            var selectListItems = EmpolyeeWithoutUserAccess
                 .Select(user => new SelectListItem
                 {
-                    Text = $"{employeeService.GetEmployeeByUserId(user.Id).FirstName} {employeeService.GetEmployeeByUserId(user.Id).LastName}",
-                    Value = user.Id
+                    Text = $"{user.FirstName} {user.LastName}",
+                    Value = user.ID.ToString()
                 })
                 .ToList();
 

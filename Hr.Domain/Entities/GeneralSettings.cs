@@ -15,6 +15,8 @@ namespace Hr.Domain.Entities
         public int OvertimeHour { get; set; }
         public int DiscountHour { get; set; }
 
+        public ICollection<Weekend> Weekends { get; set; }
+
         [ForeignKey("Employee")]
         public int? EmployeeId { get; set; }
         public Employee Employee { get; set; }
