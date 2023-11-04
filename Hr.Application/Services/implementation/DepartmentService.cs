@@ -1,6 +1,8 @@
-﻿using Hr.Application.Interfaces;
+﻿using Hr.Application.DTOs.Department;
+using Hr.Application.Interfaces;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,35 +20,101 @@ namespace Hr.Application.Services.implementation
             this.unitOfWork = unitOfWork;
         }
 
-        public bool CheckDepartmentExists(Department department)
+        public bool CheckDepartmentExists(DepartmentDTO departmentDto)
         {
-            return unitOfWork.DepartmentRepository.Any(x => x.DeptName.ToLower() == department.DeptName.ToLower());
+            return unitOfWork.DepartmentRepository.Any(x => x.DeptName.ToLower() == departmentDto.Name.ToLower());
         }
 
-        public void Create(Department department)
+        public void Create(DepartmentDTO departmentDto)
         {
-            unitOfWork.DepartmentRepository.Add(department);
-            unitOfWork.Save();
+            if(departmentDto != null)
+            {
+                var department = new Department
+                {
+                    DeptName = departmentDto.Name
+                };
+
+                unitOfWork.DepartmentRepository.Add(department);
+                unitOfWork.Save();
+            }
+         
         }
 
-        public IEnumerable<Department> GetAllDepartment()
+        public IEnumerable<DepartmentDTO> GetAllDepartment()
         {
-            return unitOfWork.DepartmentRepository.GetAll();
+            var departmentDtos= new List<DepartmentDTO>();
+            var allDepartments = unitOfWork.DepartmentRepository.GetAll();
+            if (allDepartments != null && allDepartments.Any())
+            {
+                foreach (var department in allDepartments)
+                {
+                    var departmentDTO = new DepartmentDTO()
+                    {
+                        Id = department.Id,
+                        Name = department.DeptName
+                    };
+                    departmentDtos.Add(departmentDTO);
+                }
+                return departmentDtos;
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        public Department GetDepartmentId(int id)
+        public DepartmentDTO GetDepartmentId(int id)
         {
-            return unitOfWork.DepartmentRepository.Get(x => x.Id == id);
+            
+            var department = unitOfWork.DepartmentRepository.Get(x => x.Id == id);
+
+            if (department != null)
+            {
+                var departmentDTO = new DepartmentDTO
+                {
+                    Id = department.Id,
+                    Name = department.DeptName
+                };
+
+                return departmentDTO;
+            }
+            else
+            {
+                throw new Exception("Not found Department");
+            }
+
         }
 
-        public void Update(Department department)
+        public void Update(DepartmentDTO departmentDto)
         {
-            unitOfWork.DepartmentRepository.Update(department);
-            unitOfWork.Save();
+            if (departmentDto != null)
+            {
+                var existingDepartment = unitOfWork.DepartmentRepository.Get(x => x.Id == departmentDto.Id);
+
+                if (existingDepartment == null)
+                {
+                    throw new Exception("Not found Department");
+                }
+                existingDepartment.DeptName = departmentDto.Name;
+
+                unitOfWork.DepartmentRepository.Update(existingDepartment);
+                unitOfWork.Save();
+            }
+            else
+            {
+                throw new Exception("Not found Department");
+            }
+             
         }
 
-        public void Remove(Department department)
+        public void Remove(int id)
         {
+            var department = unitOfWork.DepartmentRepository.Get(x=>x.Id==id);
+
+            if (department == null)
+            {
+                throw new Exception("Not found Department");
+            }
             unitOfWork.DepartmentRepository.Remove(department);
             unitOfWork.Save();
         }

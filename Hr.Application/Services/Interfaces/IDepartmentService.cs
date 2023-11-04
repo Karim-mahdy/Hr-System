@@ -1,4 +1,5 @@
-﻿using Hr.Domain.Entities;
+﻿using Hr.Application.DTOs.Department;
+using Hr.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,12 @@ namespace Hr.Application.Services.Interfaces
 {
     public interface IDepartmentService
     {
-        IEnumerable<Department> GetAllDepartment();
-        Department GetDepartmentId(int id);
-        void Create(Department department);
-        void Update(Department department);
+        IEnumerable<DepartmentDTO> GetAllDepartment();
+         DepartmentDTO GetDepartmentId(int id);
+        void Create(DepartmentDTO departmentDto);
+        void Update(DepartmentDTO department);
 
-        bool CheckDepartmentExists(Department department);
-        void Remove(Department department);
+        bool CheckDepartmentExists(DepartmentDTO departmentDto);
+        void Remove(int  id);
     }
 }

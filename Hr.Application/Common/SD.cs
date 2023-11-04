@@ -14,5 +14,8 @@ namespace Hr.Application.Common
             SuperAdmin
         }
         public const string PermissionType = "Permission";
+        public const string AdminUserName = "Admin@gmail.com";
+        public const string AdminPasswoed = "Admin@123";
+
     }
 }

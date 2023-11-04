@@ -2,15 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Hr.Domain.Entities
 {
-    public class Employee : IdentityUser
+    public class Employee
     {
-       
+        [Key]
+        public int Id { get; set; } 
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Country { get; set; }
@@ -23,11 +25,13 @@ namespace Hr.Domain.Entities
         public double Salary { get; set; }
         public TimeSpan ArrivalTime { get; set; }
         public TimeSpan LeaveTime { get; set; }
-
-        // Navigation property to Department
-        public int? DepartmentId { get; set; }
+        public string? UserId { get; set; }
+       
+        [ForeignKey("Department")]
+        public int DepartmentId { get; set; }
         public Department Department { get; set; }
-        public ICollection<Attendance> Attendance { get; set; }
+        public ICollection<Attendance>? Attendance { get; set; }
 
+        
     }
 }
