@@ -35,7 +35,6 @@ namespace Hr.Application.Services.implementation
                     Id= attendance.Id,
                     ArrivalTime=attendance.ArrivalTime,
                     LeaveTime=attendance.LeaveTime,
-                    
                     Date = attendance.Date,
                     SelectedEmployee=attendance.EmployeeId
                 };
@@ -64,7 +63,7 @@ namespace Hr.Application.Services.implementation
                         Date = attendance.Date,
                         ArrivalTime = attendance.ArrivalTime,
                         LeaveTime = attendance.LeaveTime,
-                      
+                        
                     };
                     employeAttendance.EmployeeName = employee.Name;
                     attendanceDto.Add(employeAttendance);

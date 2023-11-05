@@ -32,7 +32,7 @@ namespace Hr.Application.Services.implementation
             this.departmentService = departmentService;
             this.userManager = userManager;
         }
-
+       
         #region Employee Attendance
         public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeAttendance()
         {
@@ -253,7 +253,7 @@ namespace Hr.Application.Services.implementation
             }
         }
 
-
+     
         public void Remove(int id)
         {
             var emp = uniteOfWork.EmployeeRepository.Get(x => x.Id == id);

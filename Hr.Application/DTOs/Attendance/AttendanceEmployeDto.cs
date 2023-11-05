@@ -21,8 +21,7 @@ namespace Hr.Application.DTOs
         public TimeSpan ArrivalTime { get; set; }
         [Required(ErrorMessage = "Leave Time is required.")]
         [DataType(DataType.Time)]
-        public TimeSpan LeaveTime { get; set; }
-        public bool? Absent { get; set; }=true;
+        public TimeSpan? LeaveTime { get; set; }
         public int SelectedEmployee { get; set; }
         public string? EmployeeName { get; set; }
 
