@@ -1,4 +1,5 @@
 ﻿using Hr.Application.DTOs;
+using Hr.Application.DTOs.Employee;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -37,23 +38,32 @@ namespace Hr.System.Controllers
 
 
         [HttpPost]
-        public IActionResult Create(AttendanceEmployeDto model)
+        public IActionResult Create(AttendanceEmployeDto attendanceEmployeDto)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    if (model == null || model.LeaveTime < model.ArrivalTime || model.LeaveTime == model.ArrivalTime)
+                    DateTime dateToCheck = attendanceEmployeDto.Date;
+                    string dayOfWeek = attendanceServices.GetDayOfWeekForDate(dateToCheck);
+
+                    List<string> employeeWeekendDays = attendanceServices.GetEmployeeWeekendDays(attendanceEmployeDto.SelectedEmployee);
+                    if (employeeWeekendDays.Contains(dayOfWeek))
                     {
-                        ModelState.AddModelError("LeaveTime", "Leave time cannot be before or equal to arrival time.");
+                        ModelState.AddModelError("Date", "Attendance on a weekend day is not allowed.");
+                        return BadRequest(ModelState);
+                    }
+                    if (attendanceServices.CheckAttendanceExists(attendanceEmployeDto))
+                    {
+                        ModelState.AddModelError("Date", "The Employee Has Added Attendance");
                         return BadRequest(ModelState);
                     }
                     var attendanceDto = new AttendanceEmployeDto
                     {
-                        ArrivalTime = model.ArrivalTime,
-                        LeaveTime = model.LeaveTime,
-                        Date = model.Date,
-                        SelectedEmployee = model.SelectedEmployee
+                        ArrivalTime = attendanceEmployeDto.ArrivalTime,
+                        LeaveTime = attendanceEmployeDto.LeaveTime,
+                        Date = attendanceEmployeDto.Date,
+                        SelectedEmployee = attendanceEmployeDto.SelectedEmployee
                     };
 
                     attendanceServices.CreateAttendance(attendanceDto);
@@ -71,16 +81,30 @@ namespace Hr.System.Controllers
             }
         }
 
-
-
         [HttpPut("{id}")]
-        public IActionResult Update(AttendanceEmployeDto model, int id)
+        public IActionResult Update(AttendanceEmployeDto attendanceEmployeDto, int id)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    attendanceServices.UpdateAttendance(model, id);
+                    if (attendanceEmployeDto == null ||
+                      !TimeSpan.TryParse(attendanceEmployeDto.ArrivalTime, out TimeSpan arrivalTime) ||
+                      !TimeSpan.TryParse(attendanceEmployeDto.LeaveTime, out TimeSpan leaveTime) ||
+                       arrivalTime >= leaveTime)
+                    {
+                        ModelState.AddModelError("LeaveTime", "Leave time cannot be before or equal to arrival time.");
+                        return BadRequest(ModelState);
+                    }
+                    if (attendanceServices.GetAllAttendance().Any(
+                        x => x.Date==attendanceEmployeDto.Date &&
+                        x.SelectedEmployee==attendanceEmployeDto.SelectedEmployee &&
+                        x.Id != attendanceEmployeDto.Id))
+                    {
+                        ModelState.AddModelError("Date", "the name is founded ");
+                        return BadRequest(ModelState);
+                    }
+                    attendanceServices.UpdateAttendance(attendanceEmployeDto, id);
                     return Ok("Attendance record updated successfully.");
                 }
                 return BadRequest(ModelState);
@@ -114,15 +138,5 @@ namespace Hr.System.Controllers
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
-
-
-
-        [HttpGet("calculate-bonus-discount-hours")]
-        public IActionResult CalculateBonusAndDiscountHours(int employeeId, int month)
-        {
-            var (bonusHours, discountHours) = attendanceServices.CalculateBonusAndDiscountHours(employeeId, month);
-            return Ok(new { BonusHours = bonusHours, DiscountHours = discountHours });
-        }
-
     }
 }

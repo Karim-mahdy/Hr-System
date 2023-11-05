@@ -33,6 +33,10 @@ namespace Hr.Application.Services.implementation
             this.userManager = userManager;
         }
 
+      
+
+
+
         #region Employee Attendance
         public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeAttendance()
         {

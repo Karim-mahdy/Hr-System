@@ -1,4 +1,5 @@
 ﻿using Hr.Application.DTOs;
+using Hr.Application.DTOs.Employee;
 using Hr.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,8 @@ namespace Hr.Application.Services.Interfaces
         void CreateAttendance(AttendanceEmployeDto attendanceDto);
         void UpdateAttendance(AttendanceEmployeDto attendanceDto, int id);
         bool DeleteAttendance(int id);
-
-        public (int BonusHours, int DiscountHours) CalculateBonusAndDiscountHours(int employeeId, int month);
+        bool CheckAttendanceExists(AttendanceEmployeDto attendanceDto);
+        string GetDayOfWeekForDate(DateTime date);
+        List<string> GetEmployeeWeekendDays(int employeeId);
     }
 }
