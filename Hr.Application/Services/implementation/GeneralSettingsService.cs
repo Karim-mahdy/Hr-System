@@ -25,7 +25,11 @@ namespace Hr.Application.Services.implementation
         }
         public GeneralSettings GetGeneralSettingId(int id)
         {
-           return unitOfWork.GeneralSettingsRepository.Get(x=>x.Id==id);
+           return unitOfWork.GeneralSettingsRepository.Get(x=>x.EmployeeId==id);
+        }
+        public GeneralSettings GetGeneralSettingForAll()
+        {
+            return unitOfWork.GeneralSettingsRepository.Get(x =>x.EmployeeId==null);
         }
         public void Create(GeneralSettings generalSettings)
         {
