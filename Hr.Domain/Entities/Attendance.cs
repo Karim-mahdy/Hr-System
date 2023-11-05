@@ -15,13 +15,10 @@ namespace Hr.Domain.Entities
         public DateTime Date { get; set; }
         public TimeSpan ArrivalTime { get; set; }
         public TimeSpan LeaveTime { get; set; }
-        public bool Absent { get; set; }
-        public double? BonusHour { get; set; }
-        public double? DiscountHour { get; set; }
-
         // Navigation property to Employee
         [ForeignKey("Employee")]
         public int EmployeeId { get; set; }
         public Employee Employee { get; set; }
+
     }
 }

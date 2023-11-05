@@ -23,33 +23,7 @@ namespace Hr.Application.Services.implementation
             this.employeeServices = employeeServices;
         }
 
-        public void CreateAttendance(AttendanceEmployeDto attendanceDto)
-        {
-            var employees = employeeServices.GetAllEmployeeAttendance();
-            attendanceDto.EmployeeList = employees.Select(employee => new SelectListItem
-            {
-                Value = employee.Id.ToString(),
-                Text = employee.Name 
-            });
-            var attendance = new Attendance()
-            {
-                ArrivalTime = attendanceDto.ArrivalTime,
-                LeaveTime = attendanceDto.LeaveTime,
-                Date = attendanceDto.Date,
-                EmployeeId = attendanceDto.SelectedEmployee,
-                Absent = false
-            };
-            if(attendance != null )
-            {
-                uniteOfWork.AttendanceRepository.Add(attendance);
-                uniteOfWork.Save();
-            }
-            else
-            {
-                throw new Exception("Attendance is error");
-            }
-
-        }
+        
 
         public AttendanceEmployeDto GetAttendanceById(int id)
         {
@@ -61,7 +35,7 @@ namespace Hr.Application.Services.implementation
                     Id= attendance.Id,
                     ArrivalTime=attendance.ArrivalTime,
                     LeaveTime=attendance.LeaveTime,
-                    Absent=attendance.Absent,
+                    
                     Date = attendance.Date,
                     SelectedEmployee=attendance.EmployeeId
                 };
@@ -90,7 +64,7 @@ namespace Hr.Application.Services.implementation
                         Date = attendance.Date,
                         ArrivalTime = attendance.ArrivalTime,
                         LeaveTime = attendance.LeaveTime,
-                        Absent= attendance.Absent
+                      
                     };
                     employeAttendance.EmployeeName = employee.Name;
                     attendanceDto.Add(employeAttendance);
@@ -99,8 +73,36 @@ namespace Hr.Application.Services.implementation
             }
             else
             {
+                throw new Exception("No Attendance is Founded");
+            }
+        }
+
+        public void CreateAttendance(AttendanceEmployeDto attendanceDto)
+        {
+            var employees = employeeServices.GetAllEmployeeAttendance();
+            attendanceDto.EmployeeList = employees.Select(employee => new SelectListItem
+            {
+                Value = employee.Id.ToString(),
+                Text = employee.Name
+            });
+            var attendance = new Attendance()
+            {
+                ArrivalTime = attendanceDto.ArrivalTime,
+                LeaveTime = attendanceDto.LeaveTime,
+                Date = attendanceDto.Date,
+                EmployeeId = attendanceDto.SelectedEmployee,
+                
+            };
+            if (attendance != null)
+            {
+                uniteOfWork.AttendanceRepository.Add(attendance);
+                uniteOfWork.Save();
+            }
+            else
+            {
                 throw new Exception("Attendance is error");
             }
+
         }
 
         public void UpdateAttendance(AttendanceEmployeDto attendanceDto,int id)
@@ -119,7 +121,6 @@ namespace Hr.Application.Services.implementation
                 attendanceFromDb.Date = attendanceDto.Date;
                 attendanceFromDb.ArrivalTime = attendanceDto.ArrivalTime;
                 attendanceFromDb.LeaveTime = attendanceDto.LeaveTime;
-                attendanceFromDb.Absent = false;
                 attendanceFromDb.EmployeeId = attendanceDto.SelectedEmployee;
                 uniteOfWork.AttendanceRepository.update(attendanceFromDb);
                 uniteOfWork.Save();

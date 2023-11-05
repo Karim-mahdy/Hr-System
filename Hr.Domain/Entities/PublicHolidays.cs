@@ -15,9 +15,6 @@ namespace Hr.Domain.Entities
         public string Name { get; set; }
         public DateTime Day { get; set; }
 
-        [ForeignKey("GeneralSettings")]
-        public int GeneralSettingsId { get; set; }
-
-        public GeneralSettings GeneralSettings { get; set; }
+     
     }
 }

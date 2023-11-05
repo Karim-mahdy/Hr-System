@@ -143,6 +143,7 @@ namespace Hr.System
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseCors("MyPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
 

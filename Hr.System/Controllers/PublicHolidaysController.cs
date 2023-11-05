@@ -1,5 +1,4 @@
-﻿using Hr.Application.DTO;
-using Hr.Application.DTOs;
+﻿using Hr.Application.DTOs;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
@@ -80,7 +79,7 @@ namespace Hr.System.Controllers
                         Id = publicHolidayDTO.Id,
                         Name = publicHolidayDTO.Name,
                         Day = publicHolidayDTO.Date,
-                        GeneralSettingsId = 1
+                        
                     };
                     publicHolidaysService.Create(publicHoliday);
                     return Created("created", publicHoliday);
