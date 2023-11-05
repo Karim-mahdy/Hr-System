@@ -40,7 +40,7 @@ namespace Hr.Application.Services.implementation
         {
             return unitOfWork.WeekendRepository.Get(x => x.Name == Name);
         }
-        public bool Update(WeekendDTO updatedWeekends)
+        public bool Update(WeekendDTO updatedWeekends,int generalSettingId)
         {
 
             if (updatedWeekends == null || updatedWeekends.Weekends == null)
@@ -53,7 +53,7 @@ namespace Hr.Application.Services.implementation
                 bool success = day.isSelected;
                 if (success)
                 {
-                    var exsist = unitOfWork.WeekendRepository.Any(x => x.Name.ToLower() == day.displayValue.ToLower() && x.GeneralSettingsId ==updatedWeekends.Id);
+                    var exsist = unitOfWork.WeekendRepository.Any(x => x.Name.ToLower() == day.displayValue.ToLower() && x.GeneralSettingsId ==generalSettingId);
                     if (exsist)
                     {
                         continue;

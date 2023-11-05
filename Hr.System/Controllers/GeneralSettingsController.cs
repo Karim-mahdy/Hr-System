@@ -1,5 +1,6 @@
 ﻿using Hr.Application.Common.Enums;
 using Hr.Application.DTOs;
+using Hr.Application.DTOs.Employee;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
@@ -20,10 +21,12 @@ namespace Hr.System.Controllers
     {
         IWeekendService weekendService;
         IGeneralSettingsService generalSettingsService;
-        public GeneralSettingsController(IWeekendService weekendService, IGeneralSettingsService generalSettingsService)
+        IEmployeeServices employeeServices;
+        public GeneralSettingsController(IWeekendService weekendService, IGeneralSettingsService generalSettingsService, IEmployeeServices employeeServices)
         {
             this.weekendService = weekendService;
             this.generalSettingsService = generalSettingsService;
+            this.employeeServices= employeeServices;
         }
         #region all emps
 
@@ -41,7 +44,14 @@ namespace Hr.System.Controllers
                 {
                     Weekends = weekDays.Select(day => new WeekendCheckDTO { displayValue = day }).ToList()
                 };
-                
+                IEnumerable<GetAllEmployeeDto> employeeDTOs = employeeServices.GetAllEmployee();
+                IEnumerable<SelectListItem> employeeSelectList = employeeDTOs.Select(dto => new SelectListItem
+                {
+                    Value = dto.ID.ToString(),
+                    Text = dto.FirstName
+                }).ToList();
+                weekendDTO.EmployeeList = employeeSelectList;
+
 
                 return Ok(weekendDTO);
             }
@@ -57,19 +67,20 @@ namespace Hr.System.Controllers
 
         #region custom 
 
-        [HttpGet("{id}")]
+        [HttpGet("{empid}")]
         //when relation between emp & his settings (custom Settings)
-        public ActionResult GetById(int id)
+        public ActionResult GetById(int empid)
         {
             try
             {
-              
-                var Weekends = weekendService.GetById(id);
-                var general = generalSettingsService.GetGeneralSettingId(id);
-                if (Weekends == null)
+                var general = generalSettingsService.GetGeneralSettingId(empid); 
+                if (general==null)
                 {
-                    return NotFound();
+                    return NotFound("no general settings for this employee!");
                 }
+                var Weekends = weekendService.GetById(general.Id);
+      
+               
                 var DTO = new WeekendDTO
                 {
                     Id = general.Id,
@@ -88,14 +99,24 @@ namespace Hr.System.Controllers
         [HttpPut]
         public IActionResult UpdateGeneralSettings(WeekendDTO updatedSettings)
         {
+            GeneralSettings updated = null;
             try
             {
-                var updated = generalSettingsService.GetGeneralSettingId(updatedSettings.Id);
+                if (updatedSettings.empid.HasValue)
+                {
+                    int nonNullableEmpid = updatedSettings.empid.Value; 
+                    updated = generalSettingsService.GetGeneralSettingId(nonNullableEmpid);
+                }
+                else
+                {
+                    updated = generalSettingsService.GetGeneralSettingForAll();
+                }
+               
                 if (updated == null)
                 {
                     return NotFound();
                 }
-                var states = weekendService.Update(updatedSettings);
+                var states = weekendService.Update(updatedSettings,updated.Id);
                 if (states == false)
                 {
                     return BadRequest("Invalid request data.");
@@ -105,7 +126,7 @@ namespace Hr.System.Controllers
                     updated.OvertimeHour = updatedSettings.OvertimeHour;
                     updated.DiscountHour = updatedSettings.DiscountHour;
                     generalSettingsService.Update(updated);
-                    return Ok("Updated weekends successfully.");
+                    return Ok("Updated General Settings successfully.");
                 }
             }
             catch (Exception ex)
@@ -169,12 +190,12 @@ namespace Hr.System.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public ActionResult Remove(int id)
+        [HttpDelete("ForSpecificEmployee{empid}")]
+        public ActionResult Remove(int empid)
         {
             try
             {
-                var remove = generalSettingsService.GetGeneralSettingId(id);
+                var remove = generalSettingsService.GetGeneralSettingId(empid);
                 if (remove == null)
                 {
                     return NotFound();

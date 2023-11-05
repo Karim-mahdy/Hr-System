@@ -16,7 +16,7 @@ namespace Hr.Application.Services.Interfaces
         Weekend GetWeekendById(int id);
          Weekend GetWeekendByName(string Name);
         IEnumerable<Weekend> GetById(int id);
-        public bool Update(WeekendDTO updatedWeekends);
+        public bool Update(WeekendDTO updatedWeekends, int generalSettingId);
         public List<string> Days();
         public bool CheckPublicHolidaysExists(Weekend weekend);
 

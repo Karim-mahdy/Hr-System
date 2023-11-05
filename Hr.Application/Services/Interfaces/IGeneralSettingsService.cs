@@ -12,6 +12,7 @@ namespace Hr.Application.Services.Interfaces
     {
         IEnumerable<GeneralSettings> GetAllGeneralSettings();
         GeneralSettings GetGeneralSettingId(int id);
+        public GeneralSettings GetGeneralSettingForAll();
         void Create(GeneralSettings generalSettings);
         void Update(GeneralSettings generalSettings);
         //bool CheckPublicHolidaysExists(PublicHolidaysDTO publicHolidayDTO);
