@@ -14,7 +14,7 @@ namespace Hr.Domain.Entities
         public int Id { get; set; }
         public DateTime Date { get; set; }
         public TimeSpan ArrivalTime { get; set; }
-        public TimeSpan LeaveTime { get; set; }
+        public TimeSpan? LeaveTime { get; set; }
         // Navigation property to Employee
         [ForeignKey("Employee")]
         public int EmployeeId { get; set; }

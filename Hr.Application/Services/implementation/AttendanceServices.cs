@@ -36,9 +36,11 @@ namespace Hr.Application.Services.implementation
             {
                 var attendanceDto = new AttendanceEmployeDto()
                 {
-                    Id = attendance.Id,
+ 
+                   Id = attendance.Id,
                     ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
                     LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
+ 
                     Date = attendance.Date,
                     SelectedEmployee = attendance.EmployeeId
                 };
@@ -65,9 +67,10 @@ namespace Hr.Application.Services.implementation
                         Id = attendance.Id,
                         SelectedEmployee = employee.Id,
                         Date = attendance.Date,
-                        ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
+ 
+                         ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
                         LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
-
+                        
                     };
                     employeAttendance.EmployeeName = employee.Name;
                     attendanceDto.Add(employeAttendance);
