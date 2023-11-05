@@ -32,7 +32,7 @@ namespace Hr.Application.Services.implementation
             this.departmentService = departmentService;
             this.userManager = userManager;
         }
-       
+ 
         #region Employee Attendance
         public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeAttendance()
         {

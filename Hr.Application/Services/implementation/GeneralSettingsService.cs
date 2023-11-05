@@ -18,6 +18,17 @@ namespace Hr.Application.Services.implementation
         }
 
 
+        public IEnumerable<string> GetWeekendDaysForGeneralSettings(int generalSettingsId)
+        {
+            var generalSettings = unitOfWork.GeneralSettingsRepository.Get(x => x.Id == generalSettingsId, includeProperties: "Weekends");
+            if (generalSettings.Weekends.Count !=0)
+            {
+                var weekendDays = generalSettings.Weekends.Select(weekend => weekend.Name);
+                return weekendDays;
+            }
+            return Enumerable.Empty<string>();
+        }
+
 
         public IEnumerable<GeneralSettings> GetAllGeneralSettings()
         {
