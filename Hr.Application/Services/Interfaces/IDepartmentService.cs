@@ -13,7 +13,7 @@ namespace Hr.Application.Services.Interfaces
         IEnumerable<DepartmentDTO> GetAllDepartment();
          DepartmentDTO GetDepartmentId(int id);
         void Create(DepartmentDTO departmentDto);
-        void Update(DepartmentDTO department);
+        void Update(int id,DepartmentDTO department);
 
         bool CheckDepartmentExists(DepartmentDTO departmentDto);
         void Remove(int  id);

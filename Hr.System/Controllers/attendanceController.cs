@@ -126,11 +126,11 @@ namespace Hr.System.Controllers
 
                 if (deleted)
                 {
-                    return Ok("Attendance record deleted successfully.");
+                    return Ok(new { message = "Attendance record deleted successfully."});
                 }
                 else
                 {
-                    return NotFound("Attendance record not found.");
+                    return NotFound(new { message = "Attendance record not found." });
                 }
             }
             catch (Exception ex)

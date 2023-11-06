@@ -85,11 +85,11 @@ namespace Hr.Application.Services.implementation
 
         }
 
-        public void Update(DepartmentDTO departmentDto)
+        public void Update(int id, DepartmentDTO departmentDto)
         {
-            if (departmentDto != null)
-            {
-                var existingDepartment = unitOfWork.DepartmentRepository.Get(x => x.Id == departmentDto.Id);
+            try 
+            { 
+                var existingDepartment = unitOfWork.DepartmentRepository.Get(x => x.Id == id);
 
                 if (existingDepartment == null)
                 {
@@ -100,7 +100,7 @@ namespace Hr.Application.Services.implementation
                 unitOfWork.DepartmentRepository.Update(existingDepartment);
                 unitOfWork.Save();
             }
-            else
+            catch
             {
                 throw new Exception("Not found Department");
             }

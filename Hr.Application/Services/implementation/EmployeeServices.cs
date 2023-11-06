@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -91,8 +92,8 @@ namespace Hr.Application.Services.implementation
                         ID = emp.Id,
                         FirstName = emp.FirstName,
                         LastName = emp.LastName,
-                        ArrivalTime = emp.ArrivalTime.ToString("hh\\:mm\\:ss"), // Convert TimeSpan to string
-                        LeaveTime = emp.LeaveTime.ToString("hh\\:mm\\:ss"), // Convert TimeSpan to string
+                        ArrivalTime = emp.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
+                        LeaveTime = emp.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
                         BirthDate = emp.BirthDate,
                         City = emp.City,
                         Country = emp.Country,
@@ -127,8 +128,8 @@ namespace Hr.Application.Services.implementation
                     UserId = employees.UserId,
                     FirstName = employees.FirstName,
                     LastName = employees.LastName,
-                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
-                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
+                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
+                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
                     BirthDate = employees.BirthDate,
                     City = employees.City,
                     Country = employees.Country,
@@ -144,15 +145,15 @@ namespace Hr.Application.Services.implementation
             }
             else
             {
-                return null;
+                throw new Exception("Employee Not Found");
             }
         }
         public void CreateEmployee(GetAllEmployeeDto EmployeeDto)
         {
             try
             {
-                TimeSpan arrivalTime = TimeSpan.Parse(EmployeeDto.ArrivalTime);
-                TimeSpan leaveTime = TimeSpan.Parse(EmployeeDto.LeaveTime);
+                TimeSpan arrivalTime = TimeSpan.ParseExact(EmployeeDto.ArrivalTime, "hh\\:mm", CultureInfo.InvariantCulture);
+                TimeSpan leaveTime = TimeSpan.ParseExact(EmployeeDto.LeaveTime, "hh\\:mm", CultureInfo.InvariantCulture);
                 var empDto = new Employee
                 {
                     FirstName = EmployeeDto.FirstName,
@@ -177,7 +178,7 @@ namespace Hr.Application.Services.implementation
             catch (Exception)
             {
 
-                throw new Exception("Employee is error");
+                throw new Exception("Error happend during create ");
             }
             
            
@@ -193,8 +194,8 @@ namespace Hr.Application.Services.implementation
                     ID = employees.Id,
                     FirstName = employees.FirstName,
                     LastName = employees.LastName,
-                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
-                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
+                    ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
+                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
                     BirthDate = employees.BirthDate,
                     City = employees.City,
                     Country = employees.Country,
@@ -221,9 +222,9 @@ namespace Hr.Application.Services.implementation
                 var employeFromDb = uniteOfWork.EmployeeRepository.Get(x => x.Id == id );
                 if (employeFromDb != null)
                 {
-                    TimeSpan arrivalTime = TimeSpan.Parse(EmployeeDto.ArrivalTime);
-                    TimeSpan leaveTime = TimeSpan.Parse(EmployeeDto.LeaveTime);
-
+                    
+                    TimeSpan arrivalTime = TimeSpan.ParseExact(EmployeeDto.ArrivalTime, "hh\\:mm", CultureInfo.InvariantCulture);
+                    TimeSpan leaveTime = TimeSpan.ParseExact(EmployeeDto.LeaveTime, "hh\\:mm", CultureInfo.InvariantCulture);
                     employeFromDb.Id = EmployeeDto.ID;
                     employeFromDb.FirstName = EmployeeDto.FirstName;
                     employeFromDb.LastName = EmployeeDto.LastName;
@@ -249,7 +250,7 @@ namespace Hr.Application.Services.implementation
             }
             catch (Exception)
             {
-                throw new Exception("Employee is error");
+                throw new Exception("Error happend");
             }
         }
 
