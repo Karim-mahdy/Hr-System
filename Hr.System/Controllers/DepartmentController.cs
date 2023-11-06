@@ -101,11 +101,11 @@ namespace Hr.System.Controllers
                     if (departmentService.GetAllDepartment().Any(
                         x => x.Name.ToLower() == updatedDepartmentDTO.Name.ToLower() && x.Id != updatedDepartmentDTO.Id))
                     {
-                        ModelState.AddModelError("DeptName", "Deptartment Name is founded ");
+                        ModelState.AddModelError("DeptName", "Deptartment Name is founded");
                         return BadRequest(ModelState);
                     }
 
-                    departmentService.Update(updatedDepartmentDTO);
+                    departmentService.Update(id,updatedDepartmentDTO);
                     return Ok(updatedDepartmentDTO);
                 }
 
@@ -123,7 +123,7 @@ namespace Hr.System.Controllers
             try
             {
                 departmentService.Remove(id);
-                return Ok(" Department Has Delete");
+                return Ok(new { message = "Department has been deleted" });
             }
             catch (Exception ex)
             {

@@ -96,7 +96,7 @@ namespace Hr.System.Controllers
                         }
                         catch (Exception ex)
                         {
-                            return BadRequest("Error occurred during the execution of the stored procedure.");
+                            return StatusCode(500, new { error = "An error occurred", message = ex.Message });
                         }
                     }
                 }
@@ -184,7 +184,7 @@ namespace Hr.System.Controllers
                             }
                             catch (Exception ex)
                             {
-                                return BadRequest("An error occurred during the execution of the stored procedure.");
+                                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
                             }
                         }
                     }
@@ -201,7 +201,7 @@ namespace Hr.System.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred: " + ex.Message);
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
     }

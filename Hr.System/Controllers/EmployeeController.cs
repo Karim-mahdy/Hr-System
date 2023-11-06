@@ -141,7 +141,7 @@ namespace Hr.System.Controllers
             try
             {
                 employeeServices.Remove(id);
-                return Ok("Employee deleted successfully.");
+                return Ok(new {message = "Employee deleted successfully." });
             }
             catch (Exception ex)
             {

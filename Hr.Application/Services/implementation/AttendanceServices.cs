@@ -1,4 +1,5 @@
 ﻿using Hr.Application.DTOs;
+using Hr.Application.DTOs.Attendance;
 using Hr.Application.DTOs.Employee;
 using Hr.Application.Interfaces;
 using Hr.Application.Services.Interfaces;
@@ -19,14 +20,43 @@ namespace Hr.Application.Services.implementation
         private readonly IUnitOfWork uniteOfWork;
         private readonly IEmployeeServices employeeServices;
         private readonly IGeneralSettingsService generalSettingsService;
+        private readonly IDepartmentService departmentService;
 
-        public AttendanceServices(IUnitOfWork uniteOfWork, IEmployeeServices employeeServices, IGeneralSettingsService generalSettingsService)
+        public AttendanceServices(IUnitOfWork uniteOfWork, IEmployeeServices employeeServices, IGeneralSettingsService generalSettingsService, IDepartmentService departmentService)
         {
             this.uniteOfWork = uniteOfWork;
             this.employeeServices = employeeServices;
             this.generalSettingsService = generalSettingsService;
+            this.departmentService = departmentService;
         }
 
+
+        public IEnumerable<AttendanceEmployeDto> FilterAttendancesByDateRange(AtendanceFilterDto filterDto)
+        {
+            var attendances = uniteOfWork.AttendanceRepository.GetAll(includeProperties: "Employee");
+            var filteredAttendances = new List<AttendanceEmployeDto>();
+            foreach (var item in attendances)
+            {
+                var department = departmentService.GetDepartmentId(item.Employee.DepartmentId);
+
+                filteredAttendances.Add(new AttendanceEmployeDto
+                {
+                    Id = item.Id,
+                    Date = item.Date,
+                    ArrivalTime = item.ArrivalTime.ToString("hh\\:mm\\:ss"),
+                    LeaveTime = item.LeaveTime?.ToString("hh\\:mm\\:ss"),
+                    DepartmentName =department.Name,
+                    EmployeeName = item.Employee.FirstName + " " + item.Employee.LastName,
+                    // Fill in other properties you want to map
+                });
+            }
+
+            var filteredAttendance = filteredAttendances
+                .Where(attendance => attendance.Date >= filterDto.From && attendance.Date <= filterDto.To)
+                .ToList();
+
+            return filteredAttendance;
+        }
 
 
         public AttendanceEmployeDto GetAttendanceById(int id)
@@ -36,11 +66,13 @@ namespace Hr.Application.Services.implementation
             {
                 var attendanceDto = new AttendanceEmployeDto()
                 {
- 
-                   Id = attendance.Id,
+
+                    Id = attendance.Id,
                     ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
                     LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
+
                     Date = attendance.Date.ToString("yyyy-MM-dd"),
+
                     SelectedEmployee = attendance.EmployeeId
                 };
                 return attendanceDto;
@@ -61,14 +93,19 @@ namespace Hr.Application.Services.implementation
                 foreach (var attendance in attendances)
                 {
                     var employee = employeeServices.GetAttendanceById(attendance.EmployeeId);
+                    var department = departmentService.GetDepartmentId(attendance.EmployeeId);
                     var employeAttendance = new AttendanceEmployeDto()
                     {
                         Id = attendance.Id,
                         SelectedEmployee = employee.Id,
-                        Date = attendance.Date.ToString("yyyy-MM-dd"),
+
+                         Date = attendance.Date.ToString("yyyy-MM-dd"),
                          ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
+
+                        DepartmentName = department.Name,
+                       
                         LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
-                        
+
                     };
                     employeAttendance.EmployeeName = employee.Name;
                     attendanceDto.Add(employeAttendance);
@@ -100,10 +137,7 @@ namespace Hr.Application.Services.implementation
             int generalId = 0;
             var getall = generalSettingsService.GetAllGeneralSettings();
             var generalSettingsWithNullEmployeeId = generalSettingsService.GetGeneralSettingForAll();
-       //     var generalSettingsWithNullEmployeeId = uniteOfWork.GeneralSettingsRepository
-       //.GetAll()
-       //.Where(generalSettings => generalSettings.EmployeeId == null)
-       //.FirstOrDefault();
+
             if (generalSettingsWithNullEmployeeId != null)
             {
                 generalId = generalSettingsWithNullEmployeeId.Id;

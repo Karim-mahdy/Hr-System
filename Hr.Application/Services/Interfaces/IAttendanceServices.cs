@@ -1,4 +1,5 @@
 ﻿using Hr.Application.DTOs;
+using Hr.Application.DTOs.Attendance;
 using Hr.Application.DTOs.Employee;
 using Hr.Domain.Entities;
 using System;
@@ -19,5 +20,8 @@ namespace Hr.Application.Services.Interfaces
         bool CheckAttendanceExists(AttendanceEmployeDto attendanceDto);
         string GetDayOfWeekForDate(DateTime date);
         List<string> GetEmployeeWeekendDays(int employeeId);
+
+
+        public IEnumerable<AttendanceEmployeDto> FilterAttendancesByDateRange(AtendanceFilterDto filter);
     }
 }

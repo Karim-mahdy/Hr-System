@@ -1,4 +1,5 @@
 ﻿using Hr.Application.DTOs;
+using Hr.Application.DTOs.Attendance;
 using Hr.Application.DTOs.Employee;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
@@ -12,11 +13,47 @@ namespace Hr.System.Controllers
     public class AttendanceController : ControllerBase
     {
         private readonly IAttendanceServices attendanceServices;
+        private readonly IEmployeeServices employeeServices;
 
-        public AttendanceController(IAttendanceServices attendanceServices) 
+        public AttendanceController(IAttendanceServices attendanceServices,IEmployeeServices employeeServices) 
         {
             this.attendanceServices = attendanceServices;
+            this.employeeServices = employeeServices;
         }
+
+
+        [HttpPost("FilterAttendances")]
+        public IActionResult FilterAttendances(AtendanceFilterDto filter)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if(filter.From > filter.To)
+                    {
+                        ModelState.AddModelError("From", "Can not From Date is Greate Than To");
+                        return BadRequest(ModelState);
+                    }
+                    var filteredAttendances = attendanceServices.FilterAttendancesByDateRange(filter);
+
+                    // You can now use the 'filteredAttendances' list as needed
+
+                    return Ok(filteredAttendances);
+                }
+                else
+                {
+                    return BadRequest(ModelState);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+
 
         [HttpGet]
         public IActionResult GetAll()
@@ -44,10 +81,17 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
+
                     DateTime date = DateTime.Parse(attendanceEmployeDto.Date);
                     DateTime dateToCheck = date;
-                    string dayOfWeek = attendanceServices.GetDayOfWeekForDate(dateToCheck);
 
+                    
+
+                    string dayOfWeek = attendanceServices.GetDayOfWeekForDate(dateToCheck);
+                    var employee = employeeServices.GetEmployeeId(attendanceEmployeDto.SelectedEmployee);
+
+                    TimeSpan arrivalTime = TimeSpan.Parse(attendanceEmployeDto.ArrivalTime);
+                    TimeSpan arrivalTimeFromDb = TimeSpan.Parse(employee.ArrivalTime);
                     List<string> employeeWeekendDays = attendanceServices.GetEmployeeWeekendDays(attendanceEmployeDto.SelectedEmployee);
                     if (employeeWeekendDays.Contains(dayOfWeek))
                     {
@@ -57,6 +101,11 @@ namespace Hr.System.Controllers
                     if (attendanceServices.CheckAttendanceExists(attendanceEmployeDto))
                     {
                         ModelState.AddModelError("Date", "The Employee Has Added Attendance");
+                        return BadRequest(ModelState);
+                    }
+                    if (arrivalTime < arrivalTimeFromDb)
+                    {
+                        ModelState.AddModelError("ArrivalTime", "canot start in this time ");
                         return BadRequest(ModelState);
                     }
                     var attendanceDto = new AttendanceEmployeDto
@@ -127,11 +176,11 @@ namespace Hr.System.Controllers
 
                 if (deleted)
                 {
-                    return Ok("Attendance record deleted successfully.");
+                    return Ok(new { message = "Attendance record deleted successfully."});
                 }
                 else
                 {
-                    return NotFound("Attendance record not found.");
+                    return NotFound(new { message = "Attendance record not found." });
                 }
             }
             catch (Exception ex)

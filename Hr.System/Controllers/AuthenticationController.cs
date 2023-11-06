@@ -37,7 +37,17 @@ namespace Hr.System.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await userManager.FindByNameAsync(userDto.UserName);
+                ApplicationUser user = new ApplicationUser();
+                if (userDto.EmailOrUserName != null)
+                {
+                      user = await userManager.FindByNameAsync(userDto.EmailOrUserName);
+                    if (user == null)
+                    {
+                        user = await userManager.FindByEmailAsync(userDto.EmailOrUserName);
+                    }
+                }
+                
+               
                 if (user != null)
                 {
                     bool result = await userManager.CheckPasswordAsync(user, userDto.Password);
@@ -46,7 +56,7 @@ namespace Hr.System.Controllers
 
                         //Claims Token
                         var claims = new List<Claim>();
-                        claims.Add(new Claim(ClaimTypes.Name, userDto.UserName));
+                        claims.Add(new Claim(ClaimTypes.Name, userDto.EmailOrUserName));
                         claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
                         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
                         //get role
@@ -93,9 +103,9 @@ namespace Hr.System.Controllers
                     }
 
                 }
-                return Unauthorized();
+                return Unauthorized( new { message ="Email or User Name Not Exist "});
             }
-            return Unauthorized();
+            return Unauthorized(new { message = "Invaild Email or Password" });
         }
 
         [HttpPost("Logout")]
