@@ -22,34 +22,34 @@ namespace Hr.System.Controllers
         }
 
 
-        [HttpPost("FilterAttendances")]
-        public IActionResult FilterAttendances(AtendanceFilterDto filter)
-        {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    if(filter.From > filter.To)
-                    {
-                        ModelState.AddModelError("From", "Can not From Date is Greate Than To");
-                        return BadRequest(ModelState);
-                    }
-                    var filteredAttendances = attendanceServices.FilterAttendancesByDateRange(filter);
+        //[HttpPost("FilterAttendances")]
+        //public IActionResult FilterAttendances(AtendanceFilterDto filter)
+        //{
+        //    try
+        //    {
+        //        if (ModelState.IsValid)
+        //        {
+        //            if(filter.From > filter.To)
+        //            {
+        //                ModelState.AddModelError("From", "Can not From Date is Greate Than To");
+        //                return BadRequest(ModelState);
+        //            }
+        //            var filteredAttendances = attendanceServices.FilterAttendancesByDateRange(filter);
 
-                    // You can now use the 'filteredAttendances' list as needed
+        //            // You can now use the 'filteredAttendances' list as needed
 
-                    return Ok(filteredAttendances);
-                }
-                else
-                {
-                    return BadRequest(ModelState);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //            return Ok(filteredAttendances);
+        //        }
+        //        else
+        //        {
+        //            return BadRequest(ModelState);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
 
 

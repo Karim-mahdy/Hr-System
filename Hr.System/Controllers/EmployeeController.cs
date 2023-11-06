@@ -87,7 +87,7 @@ namespace Hr.System.Controllers
                     }
                     employeeServices.CreateEmployee(EmployeeDto);
 
-                    return Ok(new { error = "Employe record created successfully." });
+                    return Ok(new { Message = "Employe record created successfully." });
                 }
                 else
                 {
@@ -118,6 +118,8 @@ namespace Hr.System.Controllers
                     if (employeeServices.GetAllEmployee().Any(
                         x => x.FirstName.ToLower() == employeeDto.FirstName.ToLower()
                         && x.LastName.ToLower() == employeeDto.LastName.ToLower() &&
+                        x.DepartmentId == employeeDto.DepartmentId &&
+                        x.NationalId ==employeeDto.NationalId &&
                         x.ID != employeeDto.ID))
                     {
                         ModelState.AddModelError("FirstName", "the name is founded plz enter another name");

@@ -92,22 +92,19 @@ namespace Hr.Application.Services.implementation
             {
                 foreach (var attendance in attendances)
                 {
-                    var employee = employeeServices.GetAttendanceById(attendance.EmployeeId);
-                    var department = departmentService.GetDepartmentId(attendance.EmployeeId);
+                    var employee = employeeServices.GetEmployeeId(attendance.EmployeeId);
+                    
                     var employeAttendance = new AttendanceEmployeDto()
                     {
                         Id = attendance.Id,
-                        SelectedEmployee = employee.Id,
-
-                         Date = attendance.Date.ToString("yyyy-MM-dd"),
-                         ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
-
-                        DepartmentName = department.Name,
-                       
+                        SelectedEmployee = employee.ID,
+                        Date = attendance.Date.ToString("yyyy-MM-dd"),
+                        ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
+                        DepartmentName = employee.DeptName,
                         LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
 
                     };
-                    employeAttendance.EmployeeName = employee.Name;
+                    employeAttendance.EmployeeName = $"{employee.FirstName} {employee.LastName}";
                     attendanceDto.Add(employeAttendance);
                 }
                 return attendanceDto;

@@ -39,8 +39,6 @@ namespace Hr.Application.DTOs.Employee
         [RegularExpression(@"^\d{14}$", ErrorMessage = "National ID must be exactly 14 numeric characters.")]
         public string NationalId { get; set; }
 
-
-
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public string HireDate { get; set; }
