@@ -73,22 +73,58 @@ namespace Hr.System.Controllers
         {
             try
             {
-                var general = generalSettingsService.GetGeneralSettingId(empid); 
+                var general = generalSettingsService.GetGeneralSettingId(empid);
+                var generalNull = generalSettingsService.GetGeneralSettingForAll();
+                
                 if (general==null)
                 {
-                    return NotFound("no general settings for this employee!");
+                    var WeekendNull = weekendService.GetById(generalNull.Id);
+                    if (WeekendNull.Count() != 0)
+                    {
+                        var DTONull = new WeekendDTO
+                        {
+                            Id = generalNull.Id,
+                            OvertimeHour = generalNull.OvertimeHour,
+                            DiscountHour = generalNull.DiscountHour,
+                            Weekends = WeekendNull.Select(day => new WeekendCheckDTO { displayValue = day.Name, isSelected = true }).ToList()
+                        };
+                        return Ok(DTONull);
+                    }
+                    else
+                    {
+                        return NotFound(new
+                        {
+                            message = "There is no settings for this employee",
+                        });
+                    }
+                
                 }
-                var Weekends = weekendService.GetById(general.Id);
-      
-               
-                var DTO = new WeekendDTO
+                else
                 {
-                    Id = general.Id,
-                    OvertimeHour = general.OvertimeHour,
-                    DiscountHour = general.DiscountHour,
-                    Weekends = Weekends.Select(day => new WeekendCheckDTO { displayValue = day.Name, isSelected = true }).ToList()
-                };
-                return Ok(DTO);
+                    if (general == null)
+                    {
+
+                        var Deafultweekend = new WeekendDTO();
+                        return Ok(Deafultweekend);
+                    }
+                    var Weekends = weekendService.GetById(general.Id);
+                    if (Weekends.Count() != 0)
+                    {
+                        var DTO = new WeekendDTO
+                        {
+                            Id = general.Id,
+                            OvertimeHour = general.OvertimeHour,
+                            DiscountHour = general.DiscountHour,
+                            Weekends = Weekends.Select(day => new WeekendCheckDTO { displayValue = day.Name, isSelected = true }).ToList()
+                        };
+                        return Ok(DTO);
+                    }
+                    else
+                    {
+                         var  Deafultweekend= new WeekendDTO();
+                        return Ok(Deafultweekend);
+                    }
+                }
             }
             catch (Exception ex)
             {

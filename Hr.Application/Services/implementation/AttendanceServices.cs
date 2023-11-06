@@ -40,8 +40,7 @@ namespace Hr.Application.Services.implementation
                    Id = attendance.Id,
                     ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
                     LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
- 
-                    Date = attendance.Date,
+                    Date = attendance.Date.ToString("yyyy-MM-dd"),
                     SelectedEmployee = attendance.EmployeeId
                 };
                 return attendanceDto;
@@ -66,8 +65,7 @@ namespace Hr.Application.Services.implementation
                     {
                         Id = attendance.Id,
                         SelectedEmployee = employee.Id,
-                        Date = attendance.Date,
- 
+                        Date = attendance.Date.ToString("yyyy-MM-dd"),
                          ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
                         LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
                         
@@ -86,7 +84,8 @@ namespace Hr.Application.Services.implementation
 
         public bool CheckAttendanceExists(AttendanceEmployeDto attendanceDto)
         {
-            return uniteOfWork.AttendanceRepository.Any(x => x.Date == attendanceDto.Date && x.EmployeeId == attendanceDto.SelectedEmployee);
+            DateTime date= DateTime.Parse(attendanceDto.Date);
+            return uniteOfWork.AttendanceRepository.Any(x => x.Date == date && x.EmployeeId == attendanceDto.SelectedEmployee);
         }
 
         public string GetDayOfWeekForDate(DateTime date)
@@ -140,7 +139,7 @@ namespace Hr.Application.Services.implementation
                 {
                     ArrivalTime = arrivalTime,
                     LeaveTime = TimeSpan.Zero,
-                    Date = attendanceDto.Date,
+                    Date = DateTime.Now,
                     EmployeeId = attendanceDto.SelectedEmployee,
                 };
                 if (attendance != null)
@@ -168,7 +167,7 @@ namespace Hr.Application.Services.implementation
                 TimeSpan leaveTime = TimeSpan.Parse(attendanceDto.LeaveTime);
                 if (attendanceFromDb != null)
                 {
-                    attendanceFromDb.Date = attendanceDto.Date;
+                    attendanceFromDb.Date = DateTime.Now;
                     attendanceFromDb.ArrivalTime = arrivalTime;
                     attendanceFromDb.LeaveTime = leaveTime;
                     attendanceFromDb.EmployeeId = attendanceDto.SelectedEmployee;

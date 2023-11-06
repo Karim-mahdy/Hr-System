@@ -44,7 +44,8 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    DateTime dateToCheck = attendanceEmployeDto.Date;
+                    DateTime date = DateTime.Parse(attendanceEmployeDto.Date);
+                    DateTime dateToCheck = date;
                     string dayOfWeek = attendanceServices.GetDayOfWeekForDate(dateToCheck);
 
                     List<string> employeeWeekendDays = attendanceServices.GetEmployeeWeekendDays(attendanceEmployeDto.SelectedEmployee);

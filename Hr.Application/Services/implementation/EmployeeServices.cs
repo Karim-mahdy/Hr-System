@@ -86,6 +86,7 @@ namespace Hr.Application.Services.implementation
             {
                 foreach (var emp in employees)
                 {
+
                     var emps = new GetAllEmployeeDto()
                     {
                         ID = emp.Id,
@@ -93,11 +94,11 @@ namespace Hr.Application.Services.implementation
                         LastName = emp.LastName,
                         ArrivalTime = emp.ArrivalTime.ToString("hh\\:mm\\:ss"), // Convert TimeSpan to string
                         LeaveTime = emp.LeaveTime.ToString("hh\\:mm\\:ss"), // Convert TimeSpan to string
-                        BirthDate = emp.BirthDate,
+                        BirthDate = emp.BirthDate.ToString("yyyy-MM-dd"),
                         City = emp.City,
                         Country = emp.Country,
                         Gender = emp.Gender,
-                        HireDate = emp.HireDate,
+                        HireDate = emp.HireDate.ToString("yyyy-MM-dd"),
                         NationalId = emp.NationalId,
                         Nationality = emp.Nationality,
                         Salary = emp.Salary,
@@ -129,11 +130,11 @@ namespace Hr.Application.Services.implementation
                     LastName = employees.LastName,
                     ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
                     LeaveTime = employees.LeaveTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
-                    BirthDate = employees.BirthDate,
+                    BirthDate = employees.BirthDate.ToString("yyyy-MM-dd"),
                     City = employees.City,
                     Country = employees.Country,
                     Gender = employees.Gender,
-                    HireDate = employees.HireDate,
+                    HireDate = employees.HireDate.ToString("yyyy-MM-dd"),
                     NationalId = employees.NationalId,
                     Nationality = employees.Nationality,
                     Salary = employees.Salary,
@@ -151,6 +152,8 @@ namespace Hr.Application.Services.implementation
         {
             try
             {
+                DateTime BirthDate = DateTime.Parse(EmployeeDto.BirthDate);
+                DateTime HireDate = DateTime.Parse(EmployeeDto.HireDate);
                 TimeSpan arrivalTime = TimeSpan.Parse(EmployeeDto.ArrivalTime);
                 TimeSpan leaveTime = TimeSpan.Parse(EmployeeDto.LeaveTime);
                 var empDto = new Employee
@@ -159,11 +162,11 @@ namespace Hr.Application.Services.implementation
                     LastName = EmployeeDto.LastName,
                     ArrivalTime = arrivalTime,
                     LeaveTime = leaveTime,
-                    BirthDate = EmployeeDto.BirthDate,
+                    BirthDate = BirthDate,
                     City = EmployeeDto.City,
                     Country = EmployeeDto.Country,
                     Gender = EmployeeDto.Gender,
-                    HireDate = EmployeeDto.HireDate,
+                    HireDate = HireDate,
                     NationalId = EmployeeDto.NationalId,
                     Nationality = EmployeeDto.Nationality,
                     Salary = EmployeeDto.Salary,
@@ -195,11 +198,11 @@ namespace Hr.Application.Services.implementation
                     LastName = employees.LastName,
                     ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
                     LeaveTime = employees.LeaveTime.ToString("hh\\:mm\\:ss"), // Format TimeSpan as "hh:mm"
-                    BirthDate = employees.BirthDate,
+                    BirthDate = employees.BirthDate.ToString("yyyy-MM-dd"),
                     City = employees.City,
                     Country = employees.Country,
                     Gender = employees.Gender,
-                    HireDate = employees.HireDate,
+                    HireDate = employees.HireDate.ToString("yyyy-MM-dd"),
                     NationalId = employees.NationalId,
                     Nationality = employees.Nationality,
                     Salary = employees.Salary,
@@ -221,6 +224,8 @@ namespace Hr.Application.Services.implementation
                 var employeFromDb = uniteOfWork.EmployeeRepository.Get(x => x.Id == id );
                 if (employeFromDb != null)
                 {
+                    DateTime BirthDate = DateTime.Parse(EmployeeDto.BirthDate);
+                    DateTime HireDate = DateTime.Parse(EmployeeDto.HireDate);
                     TimeSpan arrivalTime = TimeSpan.Parse(EmployeeDto.ArrivalTime);
                     TimeSpan leaveTime = TimeSpan.Parse(EmployeeDto.LeaveTime);
 
@@ -229,11 +234,11 @@ namespace Hr.Application.Services.implementation
                     employeFromDb.LastName = EmployeeDto.LastName;
                     employeFromDb.ArrivalTime = arrivalTime; // Use the parsed TimeSpan
                     employeFromDb.LeaveTime = leaveTime; // Use the parsed TimeSpan
-                    employeFromDb.BirthDate = EmployeeDto.BirthDate;
+                    employeFromDb.BirthDate = BirthDate;
                     employeFromDb.City = EmployeeDto.City;
                     employeFromDb.Country = EmployeeDto.Country;
                     employeFromDb.Gender = EmployeeDto.Gender;
-                    employeFromDb.HireDate = EmployeeDto.HireDate;
+                    employeFromDb.HireDate = HireDate;
                     employeFromDb.NationalId = EmployeeDto.NationalId;
                     employeFromDb.Nationality = EmployeeDto.Nationality;
                     employeFromDb.Salary = EmployeeDto.Salary;
