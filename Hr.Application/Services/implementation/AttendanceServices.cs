@@ -42,20 +42,20 @@ namespace Hr.Application.Services.implementation
                 filteredAttendances.Add(new AttendanceEmployeDto
                 {
                     Id = item.Id,
-                    Date = item.Date,
+                    Date = item.Date.ToString("yyyy-mm-dd"),
                     ArrivalTime = item.ArrivalTime.ToString("hh\\:mm\\:ss"),
                     LeaveTime = item.LeaveTime?.ToString("hh\\:mm\\:ss"),
-                    DepartmentName =department.Name,
+                    DepartmentName = department.Name,
                     EmployeeName = item.Employee.FirstName + " " + item.Employee.LastName,
                     // Fill in other properties you want to map
                 });
             }
 
-            var filteredAttendance = filteredAttendances
-                .Where(attendance => attendance.Date >= filterDto.From && attendance.Date <= filterDto.To)
-                .ToList();
+            //var filteredAttendance = filteredAttendances
+            //    .Where(attendance => attendance.Date >= filterDto.From && attendance.Date <= filterDto.To)
+            //    .ToList();
 
-            return filteredAttendance;
+            return null;
         }
 
 

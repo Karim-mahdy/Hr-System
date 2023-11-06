@@ -93,14 +93,9 @@ namespace Hr.Application.Services.implementation
                         ID = emp.Id,
                         FirstName = emp.FirstName,
                         LastName = emp.LastName,
-
-                      
                         BirthDate = emp.BirthDate.ToString("yyyy-MM-dd"),
-
                         ArrivalTime = emp.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
                         LeaveTime = emp.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
-                        BirthDate = emp.BirthDate,
-
                         City = emp.City,
                         Country = emp.Country,
                         Gender = emp.Gender,
@@ -134,14 +129,9 @@ namespace Hr.Application.Services.implementation
                     UserId = employees.UserId,
                     FirstName = employees.FirstName,
                     LastName = employees.LastName,
-
-                  
                     BirthDate = employees.BirthDate.ToString("yyyy-MM-dd"),
-
                     ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
-                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
-                    BirthDate = employees.BirthDate,
-
+                    LeaveTime = employees.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"  
                     City = employees.City,
                     Country = employees.Country,
                     Gender = employees.Gender,
@@ -196,8 +186,6 @@ namespace Hr.Application.Services.implementation
 
                 throw new Exception("Error happend during create ");
             }
-            
-           
         }
 
         public GetAllEmployeeDto GetEmployeeId(int id)
@@ -210,14 +198,9 @@ namespace Hr.Application.Services.implementation
                     ID = employees.Id,
                     FirstName = employees.FirstName,
                     LastName = employees.LastName,
-
-                   
                     BirthDate = employees.BirthDate.ToString("yyyy-MM-dd"),
-
                     ArrivalTime = employees.ArrivalTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
                     LeaveTime = employees.LeaveTime.ToString("hh\\:mm"), // Format TimeSpan as "hh:mm"
-                    BirthDate = employees.BirthDate,
-
                     City = employees.City,
                     Country = employees.Country,
                     Gender = employees.Gender,
@@ -308,10 +291,6 @@ namespace Hr.Application.Services.implementation
                 }
             }
         }
-
-
         #endregion
-
-
     }
 }

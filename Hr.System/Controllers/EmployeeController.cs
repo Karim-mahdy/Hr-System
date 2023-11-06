@@ -87,7 +87,7 @@ namespace Hr.System.Controllers
                     }
                     employeeServices.CreateEmployee(EmployeeDto);
 
-                    return Ok("Employe record created successfully.");
+                    return Ok(new { error = "Employe record created successfully." });
                 }
                 else
                 {
