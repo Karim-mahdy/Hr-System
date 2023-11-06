@@ -25,6 +25,7 @@ namespace Hr.Application.DTOs
  
         public int SelectedEmployee { get; set; }
         public string? EmployeeName { get; set; }
+        public string? DepartmentName { get; set; }
 
         public IEnumerable<SelectListItem>? EmployeeList { get; set; } = Enumerable.Empty<SelectListItem>();
 
