@@ -81,7 +81,12 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    DateTime dateToCheck = DateTime.Now;
+
+                    DateTime date = DateTime.Parse(attendanceEmployeDto.Date);
+                    DateTime dateToCheck = date;
+
+                    
+
                     string dayOfWeek = attendanceServices.GetDayOfWeekForDate(dateToCheck);
                     var employee = employeeServices.GetEmployeeId(attendanceEmployeDto.SelectedEmployee);
 

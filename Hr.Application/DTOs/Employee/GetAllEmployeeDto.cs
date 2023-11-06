@@ -32,8 +32,8 @@ namespace Hr.Application.DTOs.Employee
         public string Gender { get; set; }
 
         [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        public DateTime BirthDate { get; set; }
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
+        public string BirthDate { get; set; }
 
         public string Nationality { get; set; }
         [RegularExpression(@"^\d{14}$", ErrorMessage = "National ID must be exactly 14 numeric characters.")]
@@ -43,7 +43,7 @@ namespace Hr.Application.DTOs.Employee
 
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
-        public DateTime HireDate { get; set; }
+        public string HireDate { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Salary must be a positive value.")]
         public double Salary { get; set; }

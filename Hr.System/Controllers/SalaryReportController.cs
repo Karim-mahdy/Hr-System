@@ -50,7 +50,6 @@ namespace Hr.System.Controllers
                         int year = currentDate.Year;
                         command.Parameters.Add(new SqlParameter("@Month", month));
                         command.Parameters.Add(new SqlParameter("@Year", year));
-
                         try
                         {
                             using (SqlDataReader reader = command.ExecuteReader())
@@ -64,14 +63,17 @@ namespace Hr.System.Controllers
 
                                         foreach (var attendance in attend)
                                         {
-                                            if (attendance.Date.Year == year && attendance.Date.Month == month)
+                                            DateTime attendanceDate = DateTime.Parse(attendance.Date);
+
+                                            if (attendanceDate.Year == year && attendanceDate.Month == month)
                                             {
                                                 isEmployeeInMonthYear = true;
                                                 break; // No need to continue checking once a match is found
                                             }
                                         }
+                                        DateTime empBirthDate = DateTime.Parse(emp.HireDate);
 
-                                        if ((emp.HireDate.Year > year && emp.HireDate.Month > month) || isEmployeeInMonthYear)
+                                        if ((empBirthDate.Year > year && empBirthDate.Month > month) || isEmployeeInMonthYear)
                                         {
                                             var salaryDto = new SalaryDto
                                             {
@@ -146,15 +148,17 @@ namespace Hr.System.Controllers
 
                                             foreach (var attendance in attend)
                                             {
-                                                if (attendance.Date.Year == Convert.ToInt32(request.Year) && attendance.Date.Month
+                                                DateTime attendanceDate = DateTime.Parse(attendance.Date);
+
+                                                if (attendanceDate.Year == Convert.ToInt32(request.Year) && attendanceDate.Month
                                                     == Convert.ToInt32(request.Month))
                                                 {
                                                     isEmployeeInMonthYear = true;
                                                     break; // No need to continue checking once a match is found
                                                 }
                                             }
-
-                                            if ((emp.HireDate.Year == Convert.ToInt32(request.Year) && emp.HireDate.Month
+                                            DateTime empBirthDate = DateTime.Parse(emp.HireDate);
+                                            if ((empBirthDate.Year == Convert.ToInt32(request.Year) && empBirthDate.Month
                                                 == Convert.ToInt32(request.Month)) || isEmployeeInMonthYear)
                                             {
                                                 // Map the result set to SalaryDto

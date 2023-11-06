@@ -6,6 +6,7 @@ using Hr.Application.Services.Interfaces;
 using Hr.Infrastructure.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Hr.System.Controllers
 {
@@ -70,6 +71,19 @@ namespace Hr.System.Controllers
                     {
                         ModelState.AddModelError("FirstName", "First Name and Last Name is founded ");
                         return BadRequest(ModelState);
+                    }
+                    DateTime BirthDate = DateTime.Parse(EmployeeDto.BirthDate);
+                    DateTime HireDate = DateTime.Parse(EmployeeDto.HireDate);
+                    var age = BirthDate - HireDate;
+                    int years = (int)(age.TotalDays / 365.25);
+                    if (HireDate <= BirthDate || years >18)
+                    {
+                        ModelState.AddModelError("HireDate", "HireDate is less than BirthDate ");
+                        return BadRequest(new
+                        {
+                            Message = "HireDate is less than BirthDate",
+                           Errors = ModelState.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray())
+                         });
                     }
                     employeeServices.CreateEmployee(EmployeeDto);
 
