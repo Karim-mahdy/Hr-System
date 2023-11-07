@@ -52,19 +52,19 @@ namespace Hr.System.Controllers
         //}
 
 
-        [HttpGet("GetEmployeeList")]
-        public ActionResult GetEmployeeList()
-        {
-            try
-            {
-                var AttendanceDto = employeeServices.GetAllEmployeeForAttendance();
-                return Ok(AttendanceDto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
-            }
-        }
+        //[HttpGet("GetEmployeeList")]
+        //public ActionResult GetEmployeeList()
+        //{
+        //    try
+        //    {
+        //        var AttendanceDto = employeeServices.GetAllEmployeeForAttendance();
+        //        return Ok(AttendanceDto);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+        //    }
+        //}
 
         [HttpGet]
         public IActionResult GetAll()

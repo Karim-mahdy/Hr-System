@@ -35,21 +35,21 @@ namespace Hr.Application.Services.implementation
         }
  
         #region Employee Attendance
-        public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeForAttendance()
-        {
-            var listOfEmployee= new List<GetAllEmployeAttendanceDto>();
-            var employes = uniteOfWork.EmployeeRepository.GetAll();
-            foreach (var employee in employes)
-            {
-                var emp = new GetAllEmployeAttendanceDto()
-                {
-                    Id = employee.Id,
-                    Name = employee.FirstName + " " + employee.LastName, 
-                };
-                listOfEmployee.Add(emp);
-            }
-            return listOfEmployee;
-        }
+        //public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeForAttendance()
+        //{
+        //    var listOfEmployee= new List<GetAllEmployeAttendanceDto>();
+        //    var employes = uniteOfWork.EmployeeRepository.GetAll();
+        //    foreach (var employee in employes)
+        //    {
+        //        var emp = new GetAllEmployeAttendanceDto()
+        //        {
+        //            Id = employee.Id,
+        //            Name = employee.FirstName + " " + employee.LastName, 
+        //        };
+        //        listOfEmployee.Add(emp);
+        //    }
+        //    return listOfEmployee;
+        //}
 
         public GetAllEmployeAttendanceDto GetAttendanceById(int id)
         {
