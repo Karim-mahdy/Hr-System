@@ -23,6 +23,10 @@ namespace Hr.Application.Services.implementation
 
         }
 
+        public IEnumerable<Weekend> GetAllWeekends()
+        {
+            return unitOfWork.WeekendRepository.GetAll(includeProperties:"GeneralSettings");
+        }
         public IEnumerable<Weekend> GetById(int id)
         {
             return unitOfWork.WeekendRepository.GetAll(x => x.GeneralSettingsId == id);

@@ -60,6 +60,7 @@ namespace Hr.System.Controllers
                         {
                             var userDto = new UserWithRoleDto
                             {
+                                Id = user.Id,
                                 FullName = $"{employee.FirstName} {employee.LastName}",
                                 UserName = user.UserName,
                                 Email = user.Email,

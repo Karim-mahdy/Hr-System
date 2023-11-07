@@ -39,24 +39,35 @@ namespace Hr.System.Controllers
                 var general = generalSettingsService.GetGeneralSettingForAll();
 
                 var weekDays = weekendService.Days();
+                
                 var weekendDTO = new WeekendDTO();
                 if (general == null)
                 {
-                     weekendDTO = new WeekendDTO
+                    weekendDTO = new WeekendDTO
                     {
-                        Weekends = weekDays.Select(day => new WeekendCheckDTO { displayValue = day }).ToList()
-                    };
+                         Weekends = weekDays.Select(day => new WeekendCheckDTO
+                         {
+                             displayValue = day,
+                             isSelected = false,
+                         }).ToList()
+                     };
                 }
                 else
                 {
-                     weekendDTO = new WeekendDTO
+                    var weekdaysDb = weekendService.GetAllWeekends().Where(x => x.GeneralSettings.EmployeeId == null);
+
+                    weekendDTO = new WeekendDTO
                     {
                         OvertimeHour = general.OvertimeHour,
                         DiscountHour = general.DiscountHour,
                         Id = general.Id,
                         empid = general.EmployeeId,
-                        Weekends = weekDays.Select(day => new WeekendCheckDTO { displayValue = day }).ToList()
-                    };
+                         Weekends = weekDays.Select(day => new WeekendCheckDTO
+                         {
+                             displayValue = day,
+                             isSelected = weekdaysDb.Any(x => x.Name == day)
+                         }).ToList()
+                     };
                 }
                 IEnumerable<GetAllEmployeeDto> employeeDTOs = employeeServices.GetAllEmployee();
                 IEnumerable<SelectListItem> employeeSelectList = employeeDTOs.Select(dto => new SelectListItem

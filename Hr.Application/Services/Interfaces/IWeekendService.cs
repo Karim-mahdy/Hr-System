@@ -11,6 +11,7 @@ namespace Hr.Application.Services.Interfaces
 {
     public interface IWeekendService
     {
+        IEnumerable<Weekend> GetAllWeekends();
         void Delete(Weekend weekend);
         void Create(Weekend weekend);
         Weekend GetWeekendById(int id);
