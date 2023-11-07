@@ -122,14 +122,21 @@ namespace Hr.System.Controllers
         {
             try
             {
-                departmentService.Remove(id);
-                return Ok(new { message = "Department has been deleted" });
+                var (isSuccess, employeeCount) = departmentService.Remove(id);
+
+                if (!isSuccess)
+                {
+                    return BadRequest(new { message = $"Department has {employeeCount} Employees  please transfre them to another department ." });
+                }
+
+                return Ok(new { message = "Department has been removed." });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
+
 
 
     }

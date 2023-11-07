@@ -77,6 +77,7 @@ namespace Hr.Application.Services.implementation
         public void Delete(Weekend weekend)
         {
             unitOfWork.WeekendRepository.Remove(weekend);
+            unitOfWork.Save();
         }
         public List<string> Days()
         {
@@ -90,5 +91,7 @@ namespace Hr.Application.Services.implementation
         {
             return unitOfWork.WeekendRepository.Any(x => x.Name.ToLower() == weekend.Name.ToLower()&&x.GeneralSettingsId==weekend.GeneralSettingsId);
         }
+
+      
     }
 }

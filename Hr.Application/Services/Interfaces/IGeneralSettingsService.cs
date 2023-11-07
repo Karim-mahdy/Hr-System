@@ -18,5 +18,9 @@ namespace Hr.Application.Services.Interfaces
         //bool CheckPublicHolidaysExists(PublicHolidaysDTO publicHolidayDTO);
         void Remove(GeneralSettings generalSettings);
         IEnumerable<string> GetWeekendDaysForGeneralSettings(int generalSettingsId);
+        public bool CheckGeneralSettingsExists(int? empid);
+        public bool  CheckEmployeeExists(int? empid);
+        public GeneralSettings GetGeneralSettingByID(int id);
+        public bool CheckWeekendById(int weekId);
     }
 }

@@ -107,16 +107,36 @@ namespace Hr.Application.Services.implementation
              
         }
 
-        public void Remove(int id)
+        public (bool IsSuccess, int employeeCount) Remove(int id)
         {
-            var department = unitOfWork.DepartmentRepository.Get(x=>x.Id==id);
+            var department = unitOfWork.DepartmentRepository.Get(x => x.Id == id);
+            var employee = unitOfWork.EmployeeRepository.GetAll(x => x.DepartmentId == department.Id);
+
+            int employeeCount = 0;
+
+            if (employee != null)
+            {
+                foreach (var emp in employee)
+                {
+                    employeeCount++;
+                }
+            }
 
             if (department == null)
             {
                 throw new Exception("Not found Department");
             }
+
+            if (employeeCount > 0)
+            {
+                // There are students in the department, don't remove it
+                return (false, employeeCount);
+            }
+
             unitOfWork.DepartmentRepository.Remove(department);
             unitOfWork.Save();
+
+            return (true, 0); // Operation was successful, no students left
         }
     }
 
