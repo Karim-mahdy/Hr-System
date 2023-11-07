@@ -22,6 +22,26 @@ namespace Hr.System.Controllers
         }
 
 
+
+        [HttpGet("GetCustomEmploye")]
+        public IActionResult GetCustomEmploye()
+        {
+            try
+            {
+
+                var EmployeDto = attendanceServices.GetAllEmployeeForAttendance();
+
+                return Ok(EmployeDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+            }
+        }
+
+
+
+
         //[HttpPost("FilterAttendances")]
         //public IActionResult FilterAttendances(AtendanceFilterDto filter)
         //{

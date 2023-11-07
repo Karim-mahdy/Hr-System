@@ -12,6 +12,9 @@ namespace Hr.Application.Services.Interfaces
 {
     public interface IAttendanceServices
     {
+        
+        IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeForAttendance();
+
         IEnumerable<AttendanceEmployeDto> GetAllAttendance();
         AttendanceEmployeDto GetAttendanceId(int id);
         void CreateAttendance(AttendanceEmployeDto attendanceDto);
