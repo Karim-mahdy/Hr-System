@@ -15,6 +15,7 @@ namespace Hr.Application.DTOs
         [StringLength(100, MinimumLength = 3, ErrorMessage = "Public Holiday name must be between 3 and 100 characters.")]
         public string Name { get; set; }
         [DataType(DataType.Date)]
-        public DateTime Date { get; set; }
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        public string  Date { get; set; }
     }
 }
