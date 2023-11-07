@@ -35,7 +35,7 @@ namespace Hr.Application.Services.implementation
         }
  
         #region Employee Attendance
-        public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeAttendance()
+        public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeForAttendance()
         {
             var listOfEmployee= new List<GetAllEmployeAttendanceDto>();
             var employes = uniteOfWork.EmployeeRepository.GetAll();

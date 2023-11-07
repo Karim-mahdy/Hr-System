@@ -25,29 +25,5 @@ namespace Hr.Infrastructure.Repository
         {
             context.Attendances.Update(attendance);
         }
-
-
-
-        public (int BonusHours, int DiscountHours) CalculateBonusAndDiscountHours(int employeeId, int month)
-        {
-            var BonusHours = new SqlParameter("@BonusHours", SqlDbType.Int);
-            BonusHours.Direction = ParameterDirection.Output;
-
-            var discountHours = new SqlParameter("@DiscountHours", SqlDbType.Int);
-            discountHours.Direction = ParameterDirection.Output;
-
-            var result = context.Database.ExecuteSqlRaw(
-     "EXEC CalculateBonusAndDiscountHours @EmployeeID, @Month, @BonusHours OUTPUT, @DiscountHours OUTPUT",
-     new SqlParameter("@EmployeeID", employeeId),
-     new SqlParameter("@Month", month),
-     BonusHours,
-     discountHours
- );
-
-            int bonusHoursValue = (int)BonusHours.Value;
-            int discountHoursValue = (int)discountHours.Value;
-
-            return (bonusHoursValue, discountHoursValue);
-        }
     }
 }

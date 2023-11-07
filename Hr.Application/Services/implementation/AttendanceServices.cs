@@ -8,10 +8,12 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using static Hr.Application.Common.Global.Permission;
+ 
 
 namespace Hr.Application.Services.implementation
 {
@@ -43,8 +45,8 @@ namespace Hr.Application.Services.implementation
                 {
                     Id = item.Id,
                     Date = item.Date.ToString("yyyy-mm-dd"),
-                    ArrivalTime = item.ArrivalTime.ToString("hh\\:mm\\:ss"),
-                    LeaveTime = item.LeaveTime?.ToString("hh\\:mm\\:ss"),
+                    ArrivalTime = item.ArrivalTime.ToString("hh\\:mm"),
+                    LeaveTime = item.LeaveTime?.ToString("hh\\:mm"),
                     DepartmentName = department.Name,
                     EmployeeName = item.Employee.FirstName + " " + item.Employee.LastName,
                     // Fill in other properties you want to map
@@ -68,8 +70,8 @@ namespace Hr.Application.Services.implementation
                 {
 
                     Id = attendance.Id,
-                    ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
-                    LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
+                    ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm"),
+                    LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm"),
 
                     Date = attendance.Date.ToString("yyyy-MM-dd"),
 
@@ -99,9 +101,9 @@ namespace Hr.Application.Services.implementation
                         Id = attendance.Id,
                         SelectedEmployee = employee.ID,
                         Date = attendance.Date.ToString("yyyy-MM-dd"),
-                        ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm\\:ss"),
+                        ArrivalTime = attendance.ArrivalTime.ToString("hh\\:mm"),
                         DepartmentName = employee.DeptName,
-                        LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm\\:ss"),
+                        LeaveTime = attendance.LeaveTime?.ToString("hh\\:mm"),
 
                     };
                     employeAttendance.EmployeeName = $"{employee.FirstName} {employee.LastName}";
@@ -161,15 +163,38 @@ namespace Hr.Application.Services.implementation
             return weekendDays;
         }
 
+        public AttendanceEmployeDto GetAttendanceId(int id)
+        {
+            var existedAttendance = uniteOfWork.AttendanceRepository.Get(x => x.Id == id);
+            if (existedAttendance != null)
+            {
+                var attendance = new AttendanceEmployeDto()
+                {
+                    Id = id,
+                    ArrivalTime = existedAttendance.ArrivalTime.ToString("hh\\:mm"),
+                    LeaveTime = existedAttendance.LeaveTime?.ToString(@"hh\:mm"),
+                    Date = existedAttendance.Date.ToString("yyyy-MM-dd"),
+                    SelectedEmployee = existedAttendance.EmployeeId,
+                    
+                };
+                return attendance;
+            }
+            else
+            {
+                throw new Exception("Not Found");
+            }
+          
+
+        }
         public void CreateAttendance(AttendanceEmployeDto attendanceDto)
         {
             try
             {
-                TimeSpan arrivalTime = TimeSpan.Parse(attendanceDto.ArrivalTime);
-                var attendance = new Attendance()
+                TimeSpan arrivalTime = TimeSpan.ParseExact(attendanceDto.ArrivalTime, "hh\\:mm", CultureInfo.InvariantCulture);
+                var attendance = new Domain.Entities.Attendance()
                 {
                     ArrivalTime = arrivalTime,
-                    LeaveTime = TimeSpan.Zero,
+                    LeaveTime = null,
                     Date = DateTime.Now,
                     EmployeeId = attendanceDto.SelectedEmployee,
                 };
@@ -194,8 +219,8 @@ namespace Hr.Application.Services.implementation
             try
             {
                 var attendanceFromDb = uniteOfWork.AttendanceRepository.Get(x => x.Id == id);
-                TimeSpan arrivalTime = TimeSpan.Parse(attendanceDto.ArrivalTime);
-                TimeSpan leaveTime = TimeSpan.Parse(attendanceDto.LeaveTime);
+                TimeSpan arrivalTime = TimeSpan.ParseExact(attendanceDto.ArrivalTime, "hh\\:mm", CultureInfo.InvariantCulture);
+                TimeSpan leaveTime = TimeSpan.ParseExact(attendanceDto.LeaveTime, "hh\\:mm", CultureInfo.InvariantCulture);
                 if (attendanceFromDb != null)
                 {
                     attendanceFromDb.Date = DateTime.Now;

@@ -13,7 +13,7 @@ namespace Hr.Application.Services.Interfaces
     public interface IAttendanceServices
     {
         IEnumerable<AttendanceEmployeDto> GetAllAttendance();
-        AttendanceEmployeDto GetAttendanceById(int id);
+        AttendanceEmployeDto GetAttendanceId(int id);
         void CreateAttendance(AttendanceEmployeDto attendanceDto);
         void UpdateAttendance(AttendanceEmployeDto attendanceDto, int id);
         bool DeleteAttendance(int id);

@@ -10,7 +10,5 @@ namespace Hr.Application.Interfaces
     public interface IAttendanceRepository : IRepository<Attendance>
     {
         void update(Attendance attendance);
-
-        public (int BonusHours, int DiscountHours) CalculateBonusAndDiscountHours(int employeeId, int month);
     }
 }

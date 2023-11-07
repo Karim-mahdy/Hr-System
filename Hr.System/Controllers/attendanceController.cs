@@ -15,7 +15,7 @@ namespace Hr.System.Controllers
         private readonly IAttendanceServices attendanceServices;
         private readonly IEmployeeServices employeeServices;
 
-        public AttendanceController(IAttendanceServices attendanceServices,IEmployeeServices employeeServices) 
+        public AttendanceController(IAttendanceServices attendanceServices, IEmployeeServices employeeServices)
         {
             this.attendanceServices = attendanceServices;
             this.employeeServices = employeeServices;
@@ -52,8 +52,19 @@ namespace Hr.System.Controllers
         //}
 
 
-
-
+        [HttpGet("GetEmployeeList")]
+        public ActionResult GetEmployeeList()
+        {
+            try
+            {
+                var AttendanceDto = employeeServices.GetAllEmployeeForAttendance();
+                return Ok(AttendanceDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+            }
+        }
 
         [HttpGet]
         public IActionResult GetAll()
@@ -71,8 +82,24 @@ namespace Hr.System.Controllers
 
         }
 
-
-
+        [HttpGet("{id:int}")]
+        public IActionResult GetAttendanceById(int id)
+        {
+            try
+            {
+                var attendanceDto = attendanceServices.GetAttendanceId(id);
+                
+                if (attendanceDto == null)
+                {
+                    return NotFound();
+                }
+                return Ok(attendanceDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
+            }
+        }
 
         [HttpPost]
         public IActionResult Create(AttendanceEmployeDto attendanceEmployeDto)
@@ -105,7 +132,7 @@ namespace Hr.System.Controllers
                     }
                     if (arrivalTime < arrivalTimeFromDb)
                     {
-                        ModelState.AddModelError("ArrivalTime", "canot start in this time ");
+                        ModelState.AddModelError("ArrivalTime", $"Arrival Time Must Be Greater Than Defualt Arrival For Employee {arrivalTimeFromDb}");
                         return BadRequest(ModelState);
                     }
                     var attendanceDto = new AttendanceEmployeDto
@@ -118,7 +145,7 @@ namespace Hr.System.Controllers
 
                     attendanceServices.CreateAttendance(attendanceDto);
 
-                    return Ok("Attendance record created successfully.");
+                    return Ok(new { message = "Attendance record created successfully." });
                 }
                 else
                 {
@@ -155,7 +182,7 @@ namespace Hr.System.Controllers
                         return BadRequest(ModelState);
                     }
                     attendanceServices.UpdateAttendance(attendanceEmployeDto, id);
-                    return Ok("Attendance record updated successfully.");
+                    return Ok(new { message = "Attendance record updeted successfully." });
                 }
                 return BadRequest(ModelState);
             }
@@ -165,7 +192,7 @@ namespace Hr.System.Controllers
             }
         }
 
-
+        
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)

@@ -12,7 +12,7 @@ namespace Hr.Application.Services.Interfaces
     public interface IEmployeeServices
     {
         #region Employee Attendance 
-        IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeAttendance();
+        IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeForAttendance();
         GetAllEmployeAttendanceDto GetAttendanceById(int id);
 
         #endregion

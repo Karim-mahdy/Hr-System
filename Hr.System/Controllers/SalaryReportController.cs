@@ -113,7 +113,7 @@ namespace Hr.System.Controllers
 
 
 
-        [HttpPost()]
+        [HttpPost]
         public IActionResult CalculateCustomSalaryReports([FromBody] SalayReportDto request)
         {
             try
