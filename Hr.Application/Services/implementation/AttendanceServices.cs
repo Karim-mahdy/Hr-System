@@ -33,6 +33,33 @@ namespace Hr.Application.Services.implementation
         }
 
 
+        public IEnumerable<GetAllEmployeAttendanceDto> GetAllEmployeeForAttendance()
+        {
+            var listOfEmployee = new List<GetAllEmployeAttendanceDto>();
+            //  var currentDate = DateTime.Now;
+
+            var attendance = GetAllAttendance();
+
+            var currentDate = DateTime.Now.Date;
+            // Get the date part of DateTime.Now
+            // Create a HashSet to store the dates when attendance was recorded
+            var employeesWithAttendance = uniteOfWork.EmployeeRepository.GetAll(includeProperties: "Attendance")
+                .Where(employee => !employee.Attendance.Any(a => a.Date.Date == currentDate))
+                     .AsEnumerable();
+
+            foreach (var employee in employeesWithAttendance)
+            {
+                var emp = new GetAllEmployeAttendanceDto()
+                {
+                    Id = employee.Id,
+                    Name = employee.FirstName + " " + employee.LastName,
+                };
+                listOfEmployee.Add(emp);
+            }
+            return listOfEmployee;
+        }
+
+
         public IEnumerable<AttendanceEmployeDto> FilterAttendancesByDateRange(AtendanceFilterDto filterDto)
         {
             var attendances = uniteOfWork.AttendanceRepository.GetAll(includeProperties: "Employee");

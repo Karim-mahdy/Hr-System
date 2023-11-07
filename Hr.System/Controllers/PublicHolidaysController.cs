@@ -28,8 +28,9 @@ namespace Hr.System.Controllers
                     {
                         Id = x.Id,
                         Name = x.Name,
-                        Date = x.Day
+                        Date = x.Day.ToString("yyyy-MM-dd")
                     }).ToList();
+
 
                     return Ok(publicHolidaysDTOs);
                 }
@@ -52,7 +53,7 @@ namespace Hr.System.Controllers
                     {
                         Id = publicHoliday.Id,
                         Name = publicHoliday.Name,
-                        Date = publicHoliday.Day
+                        Date = publicHoliday.Day.ToString("yyyy-MM-dd")
                     };
                     return Ok(publicHolidayDTO);
                 }
@@ -74,17 +75,35 @@ namespace Hr.System.Controllers
                 }
                 if (!publicHolidaysService.CheckPublicHolidaysExists(publicHolidayDTO))
                 {
-                    var publicHoliday = new PublicHolidays()
+                    DateTime date = DateTime.Now;
+                    DateTime publicHolidayDate= DateTime.Parse(publicHolidayDTO.Date);
+                    if (publicHolidayDate> date)
                     {
-                        Id = publicHolidayDTO.Id,
-                        Name = publicHolidayDTO.Name,
-                        Day = publicHolidayDTO.Date,
-                        
-                    };
-                    publicHolidaysService.Create(publicHoliday);
-                    return Created("created", publicHoliday);
+                        var publicHoliday = new PublicHolidays()
+                        {
+                            Id = publicHolidayDTO.Id,
+                            Name = publicHolidayDTO.Name,
+                            Day = publicHolidayDate,
+                        };
+                        publicHolidaysService.Create(publicHoliday);
+                        return Ok(new
+                        {
+                            message= "Public Holiday created successfully"
+                        });
+                    }
+                    else
+                    {
+                        return BadRequest(new
+                        {
+                            message = "Date should be greater than today"
+                        });
+                    }
+                  
                 }
-                return BadRequest();
+                return BadRequest(new
+                {
+                    message= "The Public Holiday already exists"
+                });
             }
             catch (Exception ex)
             {
@@ -104,12 +123,22 @@ namespace Hr.System.Controllers
                 }
                 if (publicHolidayDTO == null || !ModelState.IsValid)
                 {
-                    return BadRequest();
+                    return BadRequest(publicHolidayDTO);
                 }
-                if (!publicHolidaysService.GetAllPublicHolidays().Any(x => x.Name.ToLower() == publicHolidayDTO.Name.ToLower() && x.Id != id))
+                DateTime date = DateTime.Now;
+                DateTime publicHolidayDate = DateTime.Parse(publicHolidayDTO.Date);
+                if( publicHolidayDate < date)
                 {
+                    return BadRequest(new
+                    {
+                        message = "Date should be greater than today"
+                    });
+                }
+                if (!publicHolidaysService.GetAllPublicHolidays().Any(x => x.Name.ToLower() == publicHolidayDTO.Name.ToLower()  && x.Id != id))
+                {
+                    existingPublicHoliday.Id = id;
                     existingPublicHoliday.Name = publicHolidayDTO.Name;
-                    existingPublicHoliday.Day = publicHolidayDTO.Date;
+                    existingPublicHoliday.Day = publicHolidayDate;
                     publicHolidaysService.Update(existingPublicHoliday);
                     return Ok(publicHolidayDTO);
                 }
