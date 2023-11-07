@@ -20,5 +20,8 @@ namespace Hr.Application.Services.Interfaces
         public List<string> Days();
         public bool CheckPublicHolidaysExists(Weekend weekend);
 
+
+
+
     }
 }

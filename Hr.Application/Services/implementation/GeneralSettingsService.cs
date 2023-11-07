@@ -17,6 +17,17 @@ namespace Hr.Application.Services.implementation
             this.unitOfWork = unitOfWork;
         }
 
+        public bool CheckEmployeeExists(int? empid)
+        {
+            return unitOfWork.EmployeeRepository.Any(x => x.Id== empid);
+        }
+
+        public bool CheckGeneralSettingsExists(int? empid)
+        {
+            return unitOfWork.GeneralSettingsRepository.Any(x => x.EmployeeId == empid);
+        }
+
+
 
         public IEnumerable<string> GetWeekendDaysForGeneralSettings(int generalSettingsId)
         {
@@ -52,11 +63,22 @@ namespace Hr.Application.Services.implementation
             unitOfWork.GeneralSettingsRepository.Update(generalSettings);
             unitOfWork.Save();
         }
+        public GeneralSettings GetGeneralSettingByID(int id)
+        {
+            return unitOfWork.GeneralSettingsRepository.Get(x => x.Id == id);
+        }
+
+
         //bool CheckPublicHolidaysExists(PublicHolidaysDTO publicHolidayDTO);
         public void Remove(GeneralSettings generalSettings)
         {
             unitOfWork.GeneralSettingsRepository.Remove(generalSettings);
             unitOfWork.Save();
         }
+        public bool CheckWeekendById(int weekId)
+        {
+            return unitOfWork.WeekendRepository.Any(x => x.GeneralSettingsId == weekId);
+        }
+
     }
 }

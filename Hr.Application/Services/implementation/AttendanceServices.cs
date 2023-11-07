@@ -52,12 +52,13 @@ namespace Hr.Application.Services.implementation
                     // Fill in other properties you want to map
                 });
             }
+            DateTime date= DateTime.Parse(filterDto.attendanceEmployeDtos.First().Date);
 
-            //var filteredAttendance = filteredAttendances
-            //    .Where(attendance => attendance.Date >= filterDto.From && attendance.Date <= filterDto.To)
-            //    .ToList();
+            var filteredAttendance = filteredAttendances
+                .Where(attendance => date>= filterDto.From &&  date<= filterDto.To)
+                .ToList();
 
-            return null;
+            return filteredAttendance;
         }
 
 

@@ -36,14 +36,28 @@ namespace Hr.System.Controllers
         {
             try
             {
+                var general = generalSettingsService.GetGeneralSettingForAll();
 
                 var weekDays = weekendService.Days();
-
-
-                var weekendDTO = new WeekendDTO
+                var weekendDTO = new WeekendDTO();
+                if (general == null)
                 {
-                    Weekends = weekDays.Select(day => new WeekendCheckDTO { displayValue = day }).ToList()
-                };
+                     weekendDTO = new WeekendDTO
+                    {
+                        Weekends = weekDays.Select(day => new WeekendCheckDTO { displayValue = day }).ToList()
+                    };
+                }
+                else
+                {
+                     weekendDTO = new WeekendDTO
+                    {
+                        OvertimeHour = general.OvertimeHour,
+                        DiscountHour = general.DiscountHour,
+                        Id = general.Id,
+                        empid = general.EmployeeId,
+                        Weekends = weekDays.Select(day => new WeekendCheckDTO { displayValue = day }).ToList()
+                    };
+                }
                 IEnumerable<GetAllEmployeeDto> employeeDTOs = employeeServices.GetAllEmployee();
                 IEnumerable<SelectListItem> employeeSelectList = employeeDTOs.Select(dto => new SelectListItem
                 {
@@ -74,10 +88,11 @@ namespace Hr.System.Controllers
             try
             {
                 var general = generalSettingsService.GetGeneralSettingId(empid);
-                var generalNull = generalSettingsService.GetGeneralSettingForAll();
                 
                 if (general==null)
                 {
+                    var generalNull = generalSettingsService.GetGeneralSettingForAll();
+
                     var WeekendNull = weekendService.GetById(generalNull.Id);
                     if (WeekendNull.Count() != 0)
                     {
@@ -86,6 +101,7 @@ namespace Hr.System.Controllers
                             Id = generalNull.Id,
                             OvertimeHour = generalNull.OvertimeHour,
                             DiscountHour = generalNull.DiscountHour,
+                            empid = generalNull.EmployeeId,
                             Weekends = WeekendNull.Select(day => new WeekendCheckDTO { displayValue = day.Name, isSelected = true }).ToList()
                         };
                         return Ok(DTONull);
@@ -101,12 +117,6 @@ namespace Hr.System.Controllers
                 }
                 else
                 {
-                    if (general == null)
-                    {
-
-                        var Deafultweekend = new WeekendDTO();
-                        return Ok(Deafultweekend);
-                    }
                     var Weekends = weekendService.GetById(general.Id);
                     if (Weekends.Count() != 0)
                     {
@@ -115,6 +125,7 @@ namespace Hr.System.Controllers
                             Id = general.Id,
                             OvertimeHour = general.OvertimeHour,
                             DiscountHour = general.DiscountHour,
+                            empid= general.EmployeeId,
                             Weekends = Weekends.Select(day => new WeekendCheckDTO { displayValue = day.Name, isSelected = true }).ToList()
                         };
                         return Ok(DTO);
@@ -135,34 +146,46 @@ namespace Hr.System.Controllers
         [HttpPut]
         public IActionResult UpdateGeneralSettings(WeekendDTO updatedSettings)
         {
+
             GeneralSettings updated = null;
             try
             {
-                if (updatedSettings.empid.HasValue)
+                if (updatedSettings.empid !=0)
                 {
+                    var exitedEmployee = generalSettingsService.CheckEmployeeExists(updatedSettings.empid);
+                    if (exitedEmployee == false)
+                    {
+                        return BadRequest(new { error = "employee Not Found!" });
+                    }
                     int nonNullableEmpid = updatedSettings.empid.Value; 
                     updated = generalSettingsService.GetGeneralSettingId(nonNullableEmpid);
                 }
                 else
                 {
                     updated = generalSettingsService.GetGeneralSettingForAll();
+                    updatedSettings.empid = null;
                 }
                
                 if (updated == null)
                 {
                     return NotFound();
                 }
-                var states = weekendService.Update(updatedSettings,updated.Id);
+                //var exitedWeekend =  generalSettingsService.CheckWeekendById(updatedSettings.Id);
+                //if(exitedWeekend == false)
+                //{
+                //    return BadRequest(new { error = "Weekend Not Found!" });
+                //}
+                    var states = weekendService.Update(updatedSettings,updated.Id);
                 if (states == false)
                 {
-                    return BadRequest("Invalid request data.");
+                    return BadRequest( new { error = "Invalid request data." });
                 }
                 else
                 {
                     updated.OvertimeHour = updatedSettings.OvertimeHour;
                     updated.DiscountHour = updatedSettings.DiscountHour;
                     generalSettingsService.Update(updated);
-                    return Ok("Updated General Settings successfully.");
+                    return Ok(new { message = "Updated General Settings successfully." });
                 }
             }
             catch (Exception ex)
@@ -191,9 +214,28 @@ namespace Hr.System.Controllers
                 }
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(updatedWeekends);
+                    return BadRequest( new { updatedWeekends });
                 }
-                var general = new GeneralSettings
+                var generalExists = generalSettingsService.CheckGeneralSettingsExists(updatedWeekends.empid);
+                if (generalExists)
+                {
+                    return BadRequest( new {  error= "general settings already exists!" });
+                }
+                if(updatedWeekends.empid == 0)
+                {
+                    updatedWeekends.empid = null;
+                    var existsNull = generalSettingsService.GetGeneralSettingForAll();
+                    if (existsNull != null)
+                    {
+                        return BadRequest(new { error = "general settings  already exists!" });
+                    }
+                }
+                  var exitedEmployee= generalSettingsService.CheckEmployeeExists(updatedWeekends.empid);
+                if (exitedEmployee ==false)
+                {
+                    return BadRequest(new { error = "employee Not Found!" });
+                }
+                    var general = new GeneralSettings
                 {
                     OvertimeHour = updatedWeekends.OvertimeHour,
                     DiscountHour = updatedWeekends.DiscountHour,
@@ -226,17 +268,26 @@ namespace Hr.System.Controllers
             }
         }
 
-        [HttpDelete("ForSpecificEmployee{empid}")]
-        public ActionResult Remove(int empid)
+        [HttpDelete]
+        public ActionResult Remove(int id)
         {
             try
             {
-                var remove = generalSettingsService.GetGeneralSettingId(empid);
+                var remove = generalSettingsService.GetGeneralSettingId(id);
                 if (remove == null)
                 {
-                    return NotFound();
+                    return NotFound(new {error="Not Found"});
                 }
-                generalSettingsService.Remove(remove);
+                var weekendExited= weekendService.GetById(remove.Id);
+                if (weekendExited.Count() != 0)
+                {
+                    foreach (var item in weekendExited)
+                    {
+                        weekendService.Delete(item);
+
+                    }
+                }
+                    generalSettingsService.Remove(remove);
                 return NoContent();
             }
             catch (Exception ex)

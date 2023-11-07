@@ -16,6 +16,6 @@ namespace Hr.Application.Services.Interfaces
         void Update(int id,DepartmentDTO department);
 
         bool CheckDepartmentExists(DepartmentDTO departmentDto);
-        void Remove(int  id);
+        (bool IsSuccess, int employeeCount) Remove(int id);
     }
 }
