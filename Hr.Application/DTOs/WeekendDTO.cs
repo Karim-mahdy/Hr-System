@@ -13,7 +13,7 @@ namespace Hr.Application.DTOs
         public int OvertimeHour { get; set; }
         public int DiscountHour { get; set; }
         public int? empid { get; set; }
-        public List<WeekendCheckDTO> Weekends { get; set; }
+        public List<WeekendCheckDTO>? Weekends { get; set; }
         public IEnumerable<SelectListItem>? EmployeeList { get; set; } = Enumerable.Empty<SelectListItem>();
     }
 }

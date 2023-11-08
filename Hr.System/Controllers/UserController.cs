@@ -119,6 +119,11 @@ namespace Hr.System.Controllers
                     userRoles = userRoles,
                     selectRolesIds = roleIds,
                     Roles = GetRolesListExceptUserRoles(user.Id),
+                    Employees = employeeService.GetAllEmployee().Select(x => new SelectListItem
+                    {
+                        Text = $"{x.FirstName} {x.LastName}",
+                        Value = x.ID.ToString()
+                    }).ToList()
                 };
                 return Ok(UserDto);
             }
@@ -197,19 +202,19 @@ namespace Hr.System.Controllers
                     transaction.Rollback();
                 }
 
-                return BadRequest("Failed to create the user or assign user roles");
+                return BadRequest(ModelState);
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser(UserRoleFromDto model)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(string id ,UserRoleFromDto model)
         {
 
             using (var transaction = context.Database.BeginTransaction())
             {
                 if (ModelState.IsValid)
                 {
-                    var user = await userManager.FindByIdAsync(model.UserId);
+                    var user = await userManager.FindByIdAsync(id);
                     if (user == null)
                     {
                         return NotFound();
@@ -254,7 +259,7 @@ namespace Hr.System.Controllers
         }
 
 
-        [HttpPost("RemoveUser")]
+        [HttpDelete("RemoveUser")]
         public async Task<IActionResult> RemoveUser(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);

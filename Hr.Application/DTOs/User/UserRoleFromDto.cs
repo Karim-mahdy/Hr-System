@@ -18,7 +18,7 @@ namespace Hr.Application.DTOs.User
         public string Password { get; set; }
         public string Email { get; set; }   
         public List<IdentityRole>? userRoles { get; set; } = new List<IdentityRole>();
-        public List<string> selectRolesIds { get; set; } = new List<string>();
+        public List<string>? selectRolesIds { get; set; } = new List<string>();
         public IEnumerable<SelectListItem> Roles { get; set; } = new List<SelectListItem>();
         
     }

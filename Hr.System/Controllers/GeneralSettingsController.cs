@@ -7,6 +7,7 @@ using Hr.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 
@@ -26,7 +27,7 @@ namespace Hr.System.Controllers
         {
             this.weekendService = weekendService;
             this.generalSettingsService = generalSettingsService;
-            this.employeeServices= employeeServices;
+            this.employeeServices = employeeServices;
         }
         #region all emps
 
@@ -38,19 +39,19 @@ namespace Hr.System.Controllers
             {
                 var general = generalSettingsService.GetGeneralSettingForAll();
 
-                var weekDays = weekendService.Days();
-                
+                List<string> weekDays = weekendService.Days();
+
                 var weekendDTO = new WeekendDTO();
                 if (general == null)
                 {
                     weekendDTO = new WeekendDTO
                     {
-                         Weekends = weekDays.Select(day => new WeekendCheckDTO
-                         {
-                             displayValue = day,
-                             isSelected = false,
-                         }).ToList()
-                     };
+                        Weekends = weekDays.Select(day => new WeekendCheckDTO
+                        {
+                            displayValue = day,
+                            isSelected = false,
+                        }).ToList()
+                    };
                 }
                 else
                 {
@@ -62,12 +63,12 @@ namespace Hr.System.Controllers
                         DiscountHour = general.DiscountHour,
                         Id = general.Id,
                         empid = general.EmployeeId,
-                         Weekends = weekDays.Select(day => new WeekendCheckDTO
-                         {
-                             displayValue = day,
-                             isSelected = weekdaysDb.Any(x => x.Name == day)
-                         }).ToList()
-                     };
+                        Weekends = weekDays.Select(day => new WeekendCheckDTO
+                        {
+                            displayValue = day,
+                            isSelected = weekdaysDb.Any(x => x.Name == day)
+                        }).ToList()
+                    };
                 }
                 IEnumerable<GetAllEmployeeDto> employeeDTOs = employeeServices.GetAllEmployee();
                 IEnumerable<SelectListItem> employeeSelectList = employeeDTOs.Select(dto => new SelectListItem
@@ -87,7 +88,6 @@ namespace Hr.System.Controllers
         }
 
 
-
         #endregion
 
         #region custom 
@@ -98,59 +98,59 @@ namespace Hr.System.Controllers
         {
             try
             {
-                var general = generalSettingsService.GetGeneralSettingId(empid);
-                
-                if (general==null)
-                {
-                    var generalNull = generalSettingsService.GetGeneralSettingForAll();
+                List<string> weekDays = weekendService.Days();
+                var weekdaysDb = weekendService.GetAllWeekends().Where(x => x.GeneralSettings.EmployeeId == empid);
 
-                    var WeekendNull = weekendService.GetById(generalNull.Id);
-                    if (WeekendNull.Count() != 0)
+                var Customsettings = generalSettingsService.GetGeneralSettingId(empid);
+
+                if (Customsettings == null)
+                {
+                    var Deafultweekend = new WeekendDTO
                     {
-                        var DTONull = new WeekendDTO
+                        empid = empid,
+                        Weekends = weekDays.Select(day => new WeekendCheckDTO
                         {
-                            Id = generalNull.Id,
-                            OvertimeHour = generalNull.OvertimeHour,
-                            DiscountHour = generalNull.DiscountHour,
-                            empid = generalNull.EmployeeId,
-                            Weekends = WeekendNull.Select(day => new WeekendCheckDTO { displayValue = day.Name, isSelected = true }).ToList()
-                        };
-                        return Ok(DTONull);
-                    }
-                    else
-                    {
-                        return NotFound(new
+                            displayValue = day,
+                            isSelected = false
+                        }).ToList(),
+                        EmployeeList = employeeServices.GetAllEmployeeForAttendance().Select(x => new SelectListItem
                         {
-                            message = "There is no settings for this employee",
-                        });
-                    }
-                
+                            Value = x.Id.ToString(),
+                            Text = x.Name
+                        }).ToList()
+
+                    };
+                    return Ok(Deafultweekend);
+
                 }
                 else
                 {
-                    var Weekends = weekendService.GetById(general.Id);
-                    if (Weekends.Count() != 0)
+                    var Weekends = weekendService.GetById(Customsettings.Id);
+
+                    var DTO = new WeekendDTO
                     {
-                        var DTO = new WeekendDTO
+                        Id = Customsettings.Id,
+                        OvertimeHour = Customsettings.OvertimeHour,
+                        DiscountHour = Customsettings.DiscountHour,
+                        empid = Customsettings.EmployeeId,
+                        Weekends = weekDays.Select(day => new WeekendCheckDTO
                         {
-                            Id = general.Id,
-                            OvertimeHour = general.OvertimeHour,
-                            DiscountHour = general.DiscountHour,
-                            empid= general.EmployeeId,
-                            Weekends = Weekends.Select(day => new WeekendCheckDTO { displayValue = day.Name, isSelected = true }).ToList()
-                        };
-                        return Ok(DTO);
-                    }
-                    else
-                    {
-                         var  Deafultweekend= new WeekendDTO();
-                        return Ok(Deafultweekend);
-                    }
+                            displayValue = day,
+                            isSelected = weekdaysDb.Any(x => x.Name == day)
+                        }).ToList(),
+                        EmployeeList = employeeServices.GetAllEmployeeForAttendance().Select(x => new SelectListItem
+                        {
+                            Value = x.Id.ToString(),
+                            Text = x.Name
+                        }).ToList()
+
+                    };
+                    return Ok(DTO);
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while processing your request.");
+                return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
 
@@ -158,45 +158,61 @@ namespace Hr.System.Controllers
         public IActionResult UpdateGeneralSettings(WeekendDTO updatedSettings)
         {
 
-            GeneralSettings updated = null;
             try
             {
-                if (updatedSettings.empid !=0)
+                if (ModelState.IsValid)
                 {
-                    var exitedEmployee = generalSettingsService.CheckEmployeeExists(updatedSettings.empid);
-                    if (exitedEmployee == false)
+                    var CustomSettingsExisted = generalSettingsService.CheckGeneralSettingsExists(updatedSettings.empid);
+
+                    if (CustomSettingsExisted == false)
                     {
-                        return BadRequest(new { error = "employee Not Found!" });
+                        if (updatedSettings.Weekends != null
+                            && updatedSettings.DiscountHour != null
+                            && updatedSettings.OvertimeHour != null
+                            && updatedSettings.empid == 0
+                            && updatedSettings.Id != null)
+                        {
+
+                            var employeeSetting = generalSettingsService.GetGeneralSettingByID(updatedSettings.Id);
+
+                            var state = weekendService.Update(updatedSettings, employeeSetting.Id);
+                            if (state == false)
+                            {
+                                return BadRequest(new { error = "Invalid request data." });
+                            }
+                            else
+                            {
+                                employeeSetting.OvertimeHour = updatedSettings.OvertimeHour;
+                                employeeSetting.DiscountHour = updatedSettings.DiscountHour;
+                                generalSettingsService.Update(employeeSetting);
+                                
+                                return Ok(new { message = "Updated General Settings successfully." });
+
+                            }
+
+                        }
+                         
+                      
                     }
-                    int nonNullableEmpid = updatedSettings.empid.Value; 
-                    updated = generalSettingsService.GetGeneralSettingId(nonNullableEmpid);
                 }
                 else
                 {
-                    updated = generalSettingsService.GetGeneralSettingForAll();
-                    updatedSettings.empid = null;
+                    return BadRequest(updatedSettings);
                 }
-               
-                if (updated == null)
-                {
-                    return NotFound();
-                }
-                //var exitedWeekend =  generalSettingsService.CheckWeekendById(updatedSettings.Id);
-                //if(exitedWeekend == false)
-                //{
-                //    return BadRequest(new { error = "Weekend Not Found!" });
-                //}
-                    var states = weekendService.Update(updatedSettings,updated.Id);
+
+                var employeeSettings = generalSettingsService.GetGeneralSettingId(updatedSettings.empid.Value);
+
+                var states = weekendService.Update(updatedSettings, employeeSettings.Id);
                 if (states == false)
                 {
-                    return BadRequest( new { error = "Invalid request data." });
+                    return BadRequest(new { error = "Invalid request data." });
                 }
                 else
                 {
-                    updated.OvertimeHour = updatedSettings.OvertimeHour;
-                    updated.DiscountHour = updatedSettings.DiscountHour;
-                    generalSettingsService.Update(updated);
-                    return Ok(new { message = "Updated General Settings successfully." });
+                    employeeSettings.OvertimeHour = updatedSettings.OvertimeHour;
+                    employeeSettings.DiscountHour = updatedSettings.DiscountHour;
+                    generalSettingsService.Update(employeeSettings);
+                    return Ok(updatedSettings);
                 }
             }
             catch (Exception ex)
@@ -206,10 +222,11 @@ namespace Hr.System.Controllers
         }
 
         [HttpPost]
-        public ActionResult create(WeekendDTO updatedWeekends)
+        public ActionResult CreateSettings(WeekendDTO updatedWeekends)
         {
             try
             {
+               
                 int Counter = 0;
                 foreach (var item in updatedWeekends.Weekends)
                 {
@@ -217,47 +234,48 @@ namespace Hr.System.Controllers
                     {
                         Counter++;
                     }
-
                 }
+
                 if (Counter == 7)
                 {
                     return BadRequest("please select day!");
                 }
+
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest( new { updatedWeekends });
+                    return BadRequest(new { updatedWeekends });
                 }
+
                 var generalExists = generalSettingsService.CheckGeneralSettingsExists(updatedWeekends.empid);
+
                 if (generalExists)
                 {
-                    return BadRequest( new {  error= "general settings already exists!" });
+                    return BadRequest(new { error = "Custom settings Already Exists!" });
                 }
-                if(updatedWeekends.empid == 0)
+
+                if (updatedWeekends.empid == 0)
                 {
                     updatedWeekends.empid = null;
                     var existsNull = generalSettingsService.GetGeneralSettingForAll();
                     if (existsNull != null)
                     {
-                        return BadRequest(new { error = "general settings  already exists!" });
+                        return BadRequest(new { error = "General Settings Already Exists!" });
                     }
                 }
-                  var exitedEmployee= generalSettingsService.CheckEmployeeExists(updatedWeekends.empid);
-                if (exitedEmployee ==false)
-                {
-                    return BadRequest(new { error = "employee Not Found!" });
-                }
-                    var general = new GeneralSettings
+
+                var general = new GeneralSettings
                 {
                     OvertimeHour = updatedWeekends.OvertimeHour,
                     DiscountHour = updatedWeekends.DiscountHour,
-                    EmployeeId=updatedWeekends.empid
+                    EmployeeId = updatedWeekends.empid
                 };
+
                 generalSettingsService.Create(general);
+
                 var selectedWeekends = updatedWeekends.Weekends.Where(x => x.isSelected).Select(x => x.displayValue).ToList();
                 var created = new List<WeekendDTO>();
                 foreach (var selectedDay in selectedWeekends)
                 {
-
                     var weekend = new Weekend
                     {
                         Name = selectedDay,
@@ -265,7 +283,7 @@ namespace Hr.System.Controllers
                     };
                     if (weekendService.CheckPublicHolidaysExists(weekend))
                     {
-                        return BadRequest($"the day {weekend.Name} allredy selected before!");
+                        return BadRequest($"the day {weekend.Name} already selected before!");
                     }
                     weekendService.Create(weekend);
                     created.Add(updatedWeekends);
@@ -279,17 +297,18 @@ namespace Hr.System.Controllers
             }
         }
 
-        [HttpDelete]
+
+        [HttpDelete("{id}")]
         public ActionResult Remove(int id)
         {
             try
             {
-                var remove = generalSettingsService.GetGeneralSettingId(id);
+                var remove = generalSettingsService.GetGeneralSettingByID(id);
                 if (remove == null)
                 {
-                    return NotFound(new {error="Not Found"});
+                    return NotFound(new { error = "Not Found" });
                 }
-                var weekendExited= weekendService.GetById(remove.Id);
+                var weekendExited = weekendService.GetById(remove.Id);
                 if (weekendExited.Count() != 0)
                 {
                     foreach (var item in weekendExited)
@@ -298,7 +317,7 @@ namespace Hr.System.Controllers
 
                     }
                 }
-                    generalSettingsService.Remove(remove);
+                generalSettingsService.Remove(remove);
                 return NoContent();
             }
             catch (Exception ex)
