@@ -7,7 +7,7 @@ using Hr.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Newtonsoft.Json;
+
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 

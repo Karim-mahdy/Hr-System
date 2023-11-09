@@ -118,7 +118,7 @@ namespace Hr.System.Controllers
                     {
                         counter++;
                     }
-                   
+
                 }
                 if (counter == 24)
                     ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
@@ -153,42 +153,49 @@ namespace Hr.System.Controllers
 
 
 
-        [HttpPut]
+        [HttpPut("{roleId}")]
         public async Task<IActionResult> UpdateRole(string roleId,PermissionFormDto model)
         {
             try
             {
-                var role = await roleManager.FindByIdAsync(roleId);
-                if (role == null)
+                if (ModelState.IsValid)
                 {
-                    return NotFound();
-                }
-                int counter = 0;
-                foreach (var claim in model.RoleClaims)
-                {
-                    if (!claim.IsSeleced)
+                    var role = await roleManager.FindByIdAsync(roleId);
+                    if (role == null)
                     {
-                        counter++;
+                        return NotFound();
                     }
-                     
-                }
-                if (counter == 24)
-                    ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
+                    int counter = 0;
+                    foreach (var claim in model.RoleClaims)
+                    {
+                        if (!claim.IsSeleced)
+                        {
+                            counter++;
+                        }
 
-                var roleClaim = await roleManager.GetClaimsAsync(role);
-                foreach (var claim in roleClaim)
-                {
-                    await roleManager.RemoveClaimAsync(role, claim);
-                }
-                var selectedClaims = model.RoleClaims.Where(x => x.IsSeleced).Select(x => x.DisplayValue).ToList();
-                foreach (var claimValue in selectedClaims)
-                {
-                    await roleManager.AddClaimAsync(role, new Claim(SD.PermissionType, claimValue));
-                }
-                role.Name = model.RoleName;
-                await roleManager.UpdateAsync(role);
+                    }
+                    if (counter == 24)
+                        ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
 
-                return Ok(model);
+                    var roleClaim = await roleManager.GetClaimsAsync(role);
+                    foreach (var claim in roleClaim)
+                    {
+                        await roleManager.RemoveClaimAsync(role, claim);
+                    }
+                    var selectedClaims = model.RoleClaims.Where(x => x.IsSeleced).Select(x => x.DisplayValue).ToList();
+                    foreach (var claimValue in selectedClaims)
+                    {
+                        await roleManager.AddClaimAsync(role, new Claim(SD.PermissionType, claimValue));
+                    }
+                    role.Name = model.RoleName;
+                    await roleManager.UpdateAsync(role);
+
+                    return Ok(model);
+                }
+                else
+                {
+                    return BadRequest(model);
+                }
             }
             catch (Exception ex)
             {
