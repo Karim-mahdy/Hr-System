@@ -50,8 +50,8 @@ namespace Hr.System.Controllers
                
                 if (user != null)
                 {
-                    bool result = await userManager.CheckPasswordAsync(user, userDto.Password);
-                    if (result)
+                   
+                    if (user.PasswordHash == userDto.Password)
                     {
 
                         //Claims Token
@@ -63,19 +63,19 @@ namespace Hr.System.Controllers
                         var roles = await userManager.GetRolesAsync(user);
                         foreach (var role in roles)
                         {
-                            //if (role == SD.Roles.SuperAdmin.ToString())
-                            //{
-                            //    claims.Add(new Claim(ClaimTypes.Role, role));
-                            //}
-                            //else
-                            //{
+                            if (role == SD.Roles.SuperAdmin.ToString())
+                            {
+                                claims.Add(new Claim(ClaimTypes.Role, role));
+                            }
+                            else
+                            {
                                 var permissions = await roleManager.GetClaimsAsync(await roleManager.FindByNameAsync(role));
                                 foreach (var permission in permissions)
                                 {
                                     claims.Add(new Claim(permission.Type, permission.Value));
                                 }
                                
-                            //}
+                            }
                            
                         }
 

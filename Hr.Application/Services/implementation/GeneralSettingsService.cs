@@ -24,6 +24,10 @@ namespace Hr.Application.Services.implementation
 
         public bool CheckGeneralSettingsExists(int? empid)
         {
+            if(empid == null)
+            {
+                return false;
+            }
             return unitOfWork.GeneralSettingsRepository.Any(x => x.EmployeeId == empid);
         }
 

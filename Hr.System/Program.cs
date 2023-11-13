@@ -35,7 +35,7 @@ namespace Hr.System
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
                 option =>
                 {
-                    option.Password.RequireNonAlphanumeric = false;
+                    option.Password.RequireNonAlphanumeric = true;
                     option.Password.RequiredLength = 5;
                 }
 

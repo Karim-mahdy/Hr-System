@@ -18,7 +18,6 @@ namespace Hr.Domain.Entities
 
         public ICollection<Weekend> Weekends { get; set; }
         
-       
         [ForeignKey("Employee")]
         public int? EmployeeId { get; set; }
         public Employee? Employee { get; set; }

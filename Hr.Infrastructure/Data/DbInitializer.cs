@@ -5,6 +5,7 @@ using Hr.Application.Interfaces;
 using Hr.Domain.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace Hr.Infrastructure.Data
 
                 await roleManager.SeedAdminRoleAsync();
                 await userManager.SeedAdminUserAsync(roleManager);
+                SeedStoredProcedureData(serviceScope.ServiceProvider);
             }
             
             // Other configuration code
@@ -43,13 +45,14 @@ namespace Hr.Infrastructure.Data
             {
                 UserName = SD.AdminUserName,
                 Email = SD.AdminUserName,
+                PasswordHash = SD.AdminPasswoed,
                 EmailConfirmed = true
             };
 
             var user = await userManager.FindByEmailAsync(adminUser.Email);
             if (user == null)
             {
-                await userManager.CreateAsync(adminUser,SD.AdminPasswoed);
+                await userManager.CreateAsync(adminUser);
                
                 await userManager.AddToRoleAsync(adminUser, SD.Roles.SuperAdmin.ToString());
             }
@@ -73,9 +76,42 @@ namespace Hr.Infrastructure.Data
                 }
             }
         }
+        private static void SeedStoredProcedureData(IServiceProvider serviceProvider)
+        {
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                // Use different methods to get the current directory
+                var baseDirectoryPath = AppDomain.CurrentDomain.BaseDirectory;
+                var currentDirectoryPath = Directory.GetCurrentDirectory();
+
+                Console.WriteLine($"Base Directory: {baseDirectoryPath}");
+                Console.WriteLine($"Current Directory: {currentDirectoryPath}");
+
+                // Construct the correct path to the SQL script file
+                var scriptPath = Path.Combine(baseDirectoryPath, "SqlScripts", "sp_CalculateEmployeeSalaryReport.sql");
+
+                Console.WriteLine($"Attempting to read file at: {scriptPath}");
+
+                if (!File.Exists(scriptPath))
+                {
+                    Console.WriteLine($"Error: The file '{scriptPath}' does not exist.");
+                    return;
+                }
+
+                // Read the stored procedure script from the file
+                var script = File.ReadAllText(scriptPath);
+
+                // Execute the stored procedure script
+                dbContext.Database.ExecuteSqlRaw(script);
+            }
+        }
+
+
 
     }
 
 
-   
+
 }
