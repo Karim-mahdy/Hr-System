@@ -41,34 +41,40 @@ namespace Hr.System.Controllers
 
 
 
-        //[HttpPost("FilterAttendances")]
-        //public IActionResult FilterAttendances(AtendanceFilterDto filter)
-        //{
-        //    try
-        //    {
-        //        if (ModelState.IsValid)
-        //        {
-        //            if(filter.From > filter.To)
-        //            {
-        //                ModelState.AddModelError("From", "Can not From Date is Greate Than To");
-        //                return BadRequest(ModelState);
-        //            }
-        //            var filteredAttendances = attendanceServices.FilterAttendancesByDateRange(filter);
+        [HttpPost("FilterAttendances")]
+        public IActionResult FilterAttendances(AtendanceFilterDto filter)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (!DateTime.TryParse(filter.From, out DateTime from) || !DateTime.TryParse(filter.To, out DateTime to))
+                    {
+                        ModelState.AddModelError("From", "Invalid date format");
+                        return BadRequest(ModelState);
+                    }
 
-        //            // You can now use the 'filteredAttendances' list as needed
+                    if (from > to)
+                    {
+                        ModelState.AddModelError("From", "From date cannot be greater than To date");
+                        return BadRequest(ModelState);
+                    }
+                    var filteredAttendances = attendanceServices.FilterAttendancesByDateRange(filter);
 
-        //            return Ok(filteredAttendances);
-        //        }
-        //        else
-        //        {
-        //            return BadRequest(ModelState);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
+                    // You can now use the 'filteredAttendances' list as needed
+
+                    return Ok(filteredAttendances);
+                }
+                else
+                {
+                    return BadRequest(ModelState);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
         [HttpGet("GetEmployeeList")]

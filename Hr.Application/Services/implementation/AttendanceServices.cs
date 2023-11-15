@@ -62,7 +62,15 @@ namespace Hr.Application.Services.implementation
 
         public IEnumerable<AttendanceEmployeDto> FilterAttendancesByDateRange(AtendanceFilterDto filterDto)
         {
-            var attendances = uniteOfWork.AttendanceRepository.GetAll(includeProperties: "Employee");
+            if (!DateTime.TryParse(filterDto.From, out DateTime from) || !DateTime.TryParse(filterDto.To, out DateTime to))
+            {
+                // Handle parsing error
+                throw new ArgumentException("Invalid date format");
+            }
+
+            var attendances = uniteOfWork.AttendanceRepository.GetAll(includeProperties: "Employee")
+                .Where(attend => attend.Date.Date >= from.Date && attend.Date.Date <= to.Date).ToList();
+
             var filteredAttendances = new List<AttendanceEmployeDto>();
             foreach (var item in attendances)
             {
@@ -71,21 +79,17 @@ namespace Hr.Application.Services.implementation
                 filteredAttendances.Add(new AttendanceEmployeDto
                 {
                     Id = item.Id,
-                    Date = item.Date.ToString("yyyy-mm-dd"),
-                    ArrivalTime = item.ArrivalTime.ToString("hh\\:mm"),
-                    LeaveTime = item.LeaveTime?.ToString("hh\\:mm"),
+                    Date = item.Date.ToString("yyyy-MM-dd"),
+                    ArrivalTime = item.ArrivalTime.ToString("hh\\:mm"),  // Assuming ArrivalTime is in DateTime format
+                    LeaveTime = item.LeaveTime?.ToString("hh\\:mm") ?? "N/A",  // Assuming LeaveTime is nullable DateTime
                     DepartmentName = department.Name,
                     EmployeeName = item.Employee.FirstName + " " + item.Employee.LastName,
-                    // Fill in other properties you want to map
+                    SelectedEmployee= item.EmployeeId   
+                     
                 });
             }
-            DateTime date= DateTime.Parse(filterDto.attendanceEmployeDtos.First().Date);
-
-            var filteredAttendance = filteredAttendances
-                .Where(attendance => date>= filterDto.From &&  date<= filterDto.To)
-                .ToList();
-
-            return filteredAttendance;
+            
+            return filteredAttendances;
         }
 
 

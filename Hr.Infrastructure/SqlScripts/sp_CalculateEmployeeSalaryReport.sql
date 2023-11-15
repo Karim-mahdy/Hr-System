@@ -122,10 +122,18 @@ WHERE e.Id = @EmployeeId
 
 
 
-  -- Calculate Net Salary
-  SELECT @NetSalary = (e.Salary / @AttendanceDays ) - @TotalDiscount + @TotalAdditional 
-  FROM Employees e
-  WHERE e.Id = @EmployeeId
+-- Calculate Net Salary
+SELECT @NetSalary = CASE
+    WHEN @AttendanceDays > 0 THEN
+        (
+            (e.Salary / @DaysInMonth) * @AttendanceDays  -- Adjust the calculation based on your business logic
+        ) - @TotalDiscount + @TotalAdditional
+    ELSE
+        0  -- Handle the case where AttendanceDays is zero
+END
+FROM Employees e
+WHERE e.Id = @EmployeeId;
+
   
  
  -- Return the calculated values
@@ -143,4 +151,4 @@ SELECT
 	
 end
 -- Replace @EmployeeId, @Month, and @Year with the desired values
-EXEC sp_CalculateEmployeeSalaryReport @EmployeeId = 1, @Month =11, @Year = 2023;
+EXEC sp_CalculateEmployeeSalaryReport @EmployeeId =2, @Month =11, @Year = 2023;

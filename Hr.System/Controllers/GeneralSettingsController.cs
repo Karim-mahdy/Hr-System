@@ -308,7 +308,12 @@ namespace Hr.System.Controllers
 
                     created.Add(model);
                 }
+                if (model.empid == null)
+                {
+                    model.empid = 0;
+                }
                 model.Id= general.Id;
+               
                 return Ok(model);
             }
             catch (Exception ex)
