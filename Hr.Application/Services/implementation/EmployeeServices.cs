@@ -150,7 +150,7 @@ namespace Hr.Application.Services.implementation
             }
             else
             {
-                throw new Exception("Employee Not Found");
+                return null;
             }
         }
         public void CreateEmployee(GetAllEmployeeDto EmployeeDto)

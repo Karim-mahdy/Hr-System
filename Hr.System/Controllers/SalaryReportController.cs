@@ -71,9 +71,9 @@ namespace Hr.System.Controllers
                                                 break; // No need to continue checking once a match is found
                                             }
                                         }
-                                        DateTime empBirthDate = DateTime.Parse(emp.HireDate);
+                                        DateTime empHireDate = DateTime.Parse(emp.HireDate);
 
-                                        if ((empBirthDate.Year > year && empBirthDate.Month > month) || isEmployeeInMonthYear)
+                                        if ((empHireDate.Year <= year && empHireDate.Month <= month) || isEmployeeInMonthYear)
                                         {
                                             var salaryDto = new SalaryDto
                                             {
@@ -157,9 +157,9 @@ namespace Hr.System.Controllers
                                                     break; // No need to continue checking once a match is found
                                                 }
                                             }
-                                            DateTime empBirthDate = DateTime.Parse(emp.HireDate);
-                                            if ((empBirthDate.Year == Convert.ToInt32(request.Year) && empBirthDate.Month
-                                                == Convert.ToInt32(request.Month)) || isEmployeeInMonthYear)
+                                            DateTime empHireDate = DateTime.Parse(emp.HireDate);
+                                            if ((empHireDate.Year <= Convert.ToInt32(request.Year) && empHireDate.Month
+                                                <= Convert.ToInt32(request.Month)) || isEmployeeInMonthYear)
                                             {
                                                 // Map the result set to SalaryDto
                                                 var salaryDto = new SalaryDto

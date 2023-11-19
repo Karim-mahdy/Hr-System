@@ -152,8 +152,8 @@ namespace Hr.Application.Services.implementation
 
         public bool CheckAttendanceExists(AttendanceEmployeDto attendanceDto)
         {
-            DateTime date= DateTime.Parse(attendanceDto.Date);
-            return uniteOfWork.AttendanceRepository.Any(x => x.Date == date && x.EmployeeId == attendanceDto.SelectedEmployee);
+            DateTime date= DateTime.Parse(attendanceDto.Date).Date;
+            return uniteOfWork.AttendanceRepository.Any(x => x.Date.Date == date && x.EmployeeId == attendanceDto.SelectedEmployee);
         }
 
         public string GetDayOfWeekForDate(DateTime date)

@@ -77,8 +77,9 @@ namespace Hr.System.Controllers
                 {
                     DateTime date = DateTime.Now;
                     DateTime publicHolidayDate= DateTime.Parse(publicHolidayDTO.Date);
+                    
                     if (publicHolidayDate> date)
-                    {
+                    { 
                         var publicHoliday = new PublicHolidays()
                         {
                             Id = publicHolidayDTO.Id,
@@ -127,7 +128,7 @@ namespace Hr.System.Controllers
                 }
                 DateTime date = DateTime.Now;
                 DateTime publicHolidayDate = DateTime.Parse(publicHolidayDTO.Date);
-                if( publicHolidayDate < date)
+                if( publicHolidayDate.Date < date.Date)
                 {
                     return BadRequest(new
                     {

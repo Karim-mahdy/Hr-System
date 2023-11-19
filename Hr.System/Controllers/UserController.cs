@@ -82,6 +82,8 @@ namespace Hr.System.Controllers
             }
         }
 
+       
+        
         [HttpGet("GetUserById")]
         public async Task<IActionResult> GetUserById(string userId)
         {
@@ -118,7 +120,7 @@ namespace Hr.System.Controllers
                     Password = user.PasswordHash,
                     userRoles = userRoles,
                     selectRolesIds = roleIds,
-                    Roles = GetRolesListExceptUserRoles(user.Id),
+                    Roles = GetRolesList(),
                     Employees = employeeService.GetAllEmployee().Select(x => new SelectListItem
                     {
                         Text = $"{x.FirstName} {x.LastName}",
@@ -159,6 +161,7 @@ namespace Hr.System.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> CreateUser(UserRoleFromDto model)
@@ -300,22 +303,22 @@ namespace Hr.System.Controllers
             });
         }
 
-        private IEnumerable<SelectListItem> GetRolesListExceptUserRoles(string currentUserId)
-        {
+        //private IEnumerable<SelectListItem> GetRolesListExceptUserRoles(string currentUserId)
+        //{
 
-            var currentUserRoles = userManager.GetRolesAsync(userManager.FindByIdAsync(currentUserId).Result).Result;
+        //    var currentUserRoles = userManager.GetRolesAsync(userManager.FindByIdAsync(currentUserId).Result).Result;
 
-            var rolesWithoutCurrentUserRoles = roleManager.Roles
-                .Where(role => !currentUserRoles.Contains(role.Name))
-                .Select(role => new SelectListItem
-                {
-                    Value = role.Id,
-                    Text = role.Name
-                });
+        //    var rolesWithoutCurrentUserRoles = roleManager.Roles
+        //        .Where(role => !currentUserRoles.Contains(role.Name))
+        //        .Select(role => new SelectListItem
+        //        {
+        //            Value = role.Id,
+        //            Text = role.Name
+        //        });
 
-            return rolesWithoutCurrentUserRoles;
+        //    return rolesWithoutCurrentUserRoles;
 
-        }
+        //}
 
         private async Task<IEnumerable<SelectListItem>> GetUserSelectListWithoutRoles()
         {

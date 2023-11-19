@@ -5,16 +5,17 @@ CREATE PROCEDURE sp_CalculateEmployeeSalaryReport
 @Year INT
 AS
 BEGIN
-  DECLARE @EmployeeName nvarchar(max)
-  DECLARE @Department nvarchar(max)
-  DECLARE @Salary FLOAT
-  DECLARE @AttendanceDays INT
-  DECLARE @AbsenceDays INT
-  DECLARE @AdditionalPerHour FLOAT
-  DECLARE @HourlyDiscount FLOAT
-  DECLARE @TotalDiscount FLOAT
-  DECLARE @TotalAdditional FLOAT
-  DECLARE @NetSalary FLOAT
+ DECLARE @EmployeeName NVARCHAR(MAX) = ''
+DECLARE @Department NVARCHAR(MAX) = ''
+DECLARE @Salary FLOAT = 0
+DECLARE @AttendanceDays INT = 0
+DECLARE @AbsenceDays INT = 0
+DECLARE @AdditionalPerHour FLOAT = 0
+DECLARE @HourlyDiscount FLOAT = 0
+DECLARE @TotalDiscount FLOAT = 0
+DECLARE @TotalAdditional FLOAT = 0
+DECLARE @NetSalary FLOAT = 0
+
 
 -- Retrieve Employee Information
 SELECT @EmployeeName = CONCAT(e.FirstName, ' ', e.LastName), 
@@ -86,18 +87,20 @@ SET @AbsenceDays = @DaysInMonth - @AttendanceDays - @PublicHolidaysCount - (@Wee
 
 
 -- Calculate Total Discount
-SELECT @TotalDiscount = @HourlyDiscount * (
-  SUM(
-    CASE
-      WHEN e.ArrivalTime < a.ArrivalTime THEN DATEDIFF(MINUTE, e.ArrivalTime, a.ArrivalTime)
-      ELSE 0
-    END
-    +
-    CASE
-      WHEN e.LeaveTime > a.LeaveTime THEN DATEDIFF(MINUTE, a.LeaveTime, e.LeaveTime)
-      ELSE 0
-    END
-  )
+SELECT @TotalDiscount = COALESCE(
+  @HourlyDiscount * (
+    SUM(
+      CASE
+        WHEN e.ArrivalTime < a.ArrivalTime THEN DATEDIFF(MINUTE, e.ArrivalTime, a.ArrivalTime)
+        ELSE 0
+      END
+      +
+      CASE
+        WHEN e.LeaveTime > a.LeaveTime THEN DATEDIFF(MINUTE, a.LeaveTime, e.LeaveTime)
+        ELSE 0
+      END
+    )
+  ), 0
 )
 FROM Employees e
 INNER JOIN Attendances a ON e.Id = a.EmployeeId
@@ -105,14 +108,15 @@ WHERE e.Id = @EmployeeId
   AND MONTH(a.Date) = @Month
   AND YEAR(a.Date) = @Year;
 
--- Calculate Total Additional
-SELECT @TotalAdditional = @AdditionalPerHour * (
-  SUM(
-    CASE
-      WHEN e.LeaveTime < a.LeaveTime THEN DATEDIFF(MINUTE, e.LeaveTime, a.LeaveTime)
-      ELSE 0
-    END
-  )
+SELECT @TotalAdditional = COALESCE(
+  @AdditionalPerHour * (
+    SUM(
+      CASE
+        WHEN e.LeaveTime < a.LeaveTime THEN DATEDIFF(MINUTE, e.LeaveTime, a.LeaveTime)
+        ELSE 0
+      END
+    )
+  ), 0
 )
 FROM Employees e
 INNER JOIN Attendances a ON e.Id = a.EmployeeId
@@ -120,16 +124,14 @@ WHERE e.Id = @EmployeeId
   AND MONTH(a.Date) = @Month
   AND YEAR(a.Date) = @Year;
 
-
-
+    
 -- Calculate Net Salary
 SELECT @NetSalary = CASE
     WHEN @AttendanceDays > 0 THEN
-        (
-            (e.Salary / @DaysInMonth) * @AttendanceDays  -- Adjust the calculation based on your business logic
-        ) - @TotalDiscount + @TotalAdditional
+     (e.Salary / @DaysInMonth) * @AttendanceDays - @TotalDiscount + @TotalAdditional
     ELSE
-        0  -- Handle the case where AttendanceDays is zero
+        0   
+
 END
 FROM Employees e
 WHERE e.Id = @EmployeeId;
@@ -139,16 +141,20 @@ WHERE e.Id = @EmployeeId;
  -- Return the calculated values
 SELECT 
     @EmployeeName as EmployeeName,
-	@Department as Department,
-	@Salary as  Salary,
-	@AttendanceDays AS AttendanceDays,
-    @AbsenceDays AS AbsenceDays,
-    CAST(@AdditionalPerHour * 60 AS DECIMAL(10, 2)) AS AdditionalPerHour,
-    CAST(@HourlyDiscount * 60 AS DECIMAL(10, 2)) AS HourlyDiscount,
-    CAST(@TotalDiscount AS DECIMAL(10, 2)) AS TotalDiscount,
-    CAST(@TotalAdditional AS DECIMAL(10, 2)) AS TotalAdditional,
-    CAST(@NetSalary AS DECIMAL(10, 2)) AS NetSalary;
+    @Department as Department,
+    @Salary as  Salary,
+    COALESCE(@AttendanceDays, 0) AS AttendanceDays,
+    COALESCE(@AbsenceDays, 0) AS AbsenceDays,
+    COALESCE(CAST(@AdditionalPerHour * 60 AS DECIMAL(10, 2)), 0) AS AdditionalPerHour,
+    COALESCE(CAST(@HourlyDiscount * 60 AS DECIMAL(10, 2)), 0) AS HourlyDiscount,
+    COALESCE(CAST(@TotalDiscount AS DECIMAL(10, 2)), 0) AS TotalDiscount,
+    COALESCE(CAST(@TotalAdditional AS DECIMAL(10, 2)), 0) AS TotalAdditional,
+    COALESCE(CAST(@NetSalary AS DECIMAL(10, 2)), 0) AS NetSalary,
+    0 AS DefaultForNullValues; -- Default value if all preceding variables are NULL
 	
 end
+
 -- Replace @EmployeeId, @Month, and @Year with the desired values
 EXEC sp_CalculateEmployeeSalaryReport @EmployeeId =2, @Month =11, @Year = 2023;
+
+DROP PROCEDURE dbo.sp_CalculateEmployeeSalaryReport;

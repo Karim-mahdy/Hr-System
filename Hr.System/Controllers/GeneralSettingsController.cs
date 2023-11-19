@@ -74,7 +74,7 @@ namespace Hr.System.Controllers
                 IEnumerable<SelectListItem> employeeSelectList = employeeDTOs.Select(dto => new SelectListItem
                 {
                     Value = dto.ID.ToString(),
-                    Text = dto.FirstName
+                    Text = $"{dto.FirstName} {dto.LastName}"
                 }).ToList();
                 weekendDTO.EmployeeList = employeeSelectList;
 
@@ -185,14 +185,8 @@ namespace Hr.System.Controllers
 
                     if (CustomSettingsExisted == false )
                     {
-                        if (updatedSettings.Weekends != null
-                            && updatedSettings.DiscountHour != null
-                            && updatedSettings.OvertimeHour != null
-                            && updatedSettings.empid ==null
-                            && updatedSettings.Id != null)
-                        {
-
-                            var employeeSetting = generalSettingsService.GetGeneralSettingByID(updatedSettings.Id);
+                       
+                            var employeeSetting = generalSettingsService.GetGeneralSettingByID(id);
 
                             var state = weekendService.Update(updatedSettings, employeeSetting.Id);
                             if (state == false)
@@ -208,9 +202,6 @@ namespace Hr.System.Controllers
                                 return Ok(updatedSettings);
 
                             }
-
-                        }
-                         
                       
                     }
                 }
@@ -254,7 +245,7 @@ namespace Hr.System.Controllers
                         Counter++;
                     }
                 }
-
+                        
                 if (Counter == 7)
                 {
                     return BadRequest("please select day!");

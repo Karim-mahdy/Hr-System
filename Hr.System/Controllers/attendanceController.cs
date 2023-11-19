@@ -20,8 +20,7 @@ namespace Hr.System.Controllers
             this.attendanceServices = attendanceServices;
             this.employeeServices = employeeServices;
         }
-
-
+ 
 
         [HttpGet("GetAllEmployeeWithoutAttendance")]
         public IActionResult GetAllEmployeeWithoutAttendance()
@@ -50,13 +49,13 @@ namespace Hr.System.Controllers
                 {
                     if (!DateTime.TryParse(filter.From, out DateTime from) || !DateTime.TryParse(filter.To, out DateTime to))
                     {
-                        ModelState.AddModelError("From", "Invalid date format");
+                        ModelState.AddModelError("Error", "Invalid date format");
                         return BadRequest(ModelState);
                     }
 
                     if (from > to)
                     {
-                        ModelState.AddModelError("From", "From date cannot be greater than To date");
+                        ModelState.AddModelError("Error", "From date cannot be greater than To date");
                         return BadRequest(ModelState);
                     }
                     var filteredAttendances = attendanceServices.FilterAttendancesByDateRange(filter);
@@ -145,19 +144,20 @@ namespace Hr.System.Controllers
                     TimeSpan arrivalTime = TimeSpan.Parse(attendanceEmployeDto.ArrivalTime);
                     TimeSpan arrivalTimeFromDb = TimeSpan.Parse(employee.ArrivalTime);
                     List<string> employeeWeekendDays = attendanceServices.GetEmployeeWeekendDays(attendanceEmployeDto.SelectedEmployee);
-                    if (employeeWeekendDays.Contains(dayOfWeek))
-                    {
-                        ModelState.AddModelError("Date", "Attendance on a weekend day is not allowed.");
-                        return BadRequest(ModelState);
-                    }
                     if (attendanceServices.CheckAttendanceExists(attendanceEmployeDto))
                     {
-                        ModelState.AddModelError("Date", "The Employee Has Added Attendance");
+                        ModelState.AddModelError("Error", "The Employee Has Attendance in this day");
                         return BadRequest(ModelState);
                     }
+                    if (employeeWeekendDays.Contains(dayOfWeek))
+                    {
+                        ModelState.AddModelError("Error", "Attendance on a weekend day is not allowed.");
+                        return BadRequest(ModelState);
+                    }
+                  
                     if (arrivalTime < arrivalTimeFromDb)
                     {
-                        ModelState.AddModelError("ArrivalTime", $"Arrival Time Must Be Greater Than Defualt Arrival For Employee {arrivalTimeFromDb}");
+                        ModelState.AddModelError("Error", $"Arrival Time Must Be Greater Than Defualt Arrival For Employee {arrivalTimeFromDb}");
                         return BadRequest(ModelState);
                     }
                     var attendanceDto = new AttendanceEmployeDto
@@ -190,12 +190,20 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
+
                     if (attendanceEmployeDto == null ||
                       !TimeSpan.TryParse(attendanceEmployeDto.ArrivalTime, out TimeSpan arrivalTime) ||
                       !TimeSpan.TryParse(attendanceEmployeDto.LeaveTime, out TimeSpan leaveTime) ||
                        arrivalTime >= leaveTime)
                     {
-                        ModelState.AddModelError("LeaveTime", "Leave time cannot be before or equal to arrival time.");
+                        ModelState.AddModelError("Error", "Leave time cannot be before or equal to arrival time.");
+                        return BadRequest(ModelState);
+                    }
+                    var employee = employeeServices.GetEmployeeId(attendanceEmployeDto.SelectedEmployee);
+                    TimeSpan arrivalTimeFromDb = TimeSpan.Parse(employee.ArrivalTime);
+                    if (arrivalTime < arrivalTimeFromDb)
+                    {
+                        ModelState.AddModelError("Error", $"Arrival Time Must Be Greater Than Defualt Arrival For Employee {arrivalTimeFromDb}");
                         return BadRequest(ModelState);
                     }
                     if (attendanceServices.GetAllAttendance().Any(
@@ -203,7 +211,7 @@ namespace Hr.System.Controllers
                         x.SelectedEmployee==attendanceEmployeDto.SelectedEmployee &&
                         x.Id != attendanceEmployeDto.Id))
                     {
-                        ModelState.AddModelError("Date", "the name is founded ");
+                        ModelState.AddModelError("Error", "the name is founded ");
                         return BadRequest(ModelState);
                     }
                     attendanceServices.UpdateAttendance(attendanceEmployeDto, id);

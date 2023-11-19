@@ -11,13 +11,13 @@ namespace Hr.Application.DTOs.Salary
         public string Name { get; set; }
 
         public string Department { get; set; }
-        public string BaseSalary { get; set; }
-        public string AttendanceDays { get; set; }
-        public string AbsenceDays { get; set; }
-        public string AdditionalPerHour { get; set; }
-        public string HourlyDiscount { get; set; }
-        public string TotalDiscount { get; set; }
-        public string TotalAdditional { get; set; }
+        public string BaseSalary { get; set; } = "0";
+        public string AttendanceDays { get; set; } = "0";
+        public string AbsenceDays { get; set; } = "0";
+        public string AdditionalPerHour { get; set; } = "0";
+        public string HourlyDiscount { get; set; } = "0";
+        public string TotalDiscount { get; set; } = "0";
+        public string TotalAdditional { get; set; } ="0";
         public string NetSalary { get; set; }
     }
 }

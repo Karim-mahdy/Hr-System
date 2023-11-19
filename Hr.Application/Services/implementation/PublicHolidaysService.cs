@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Hr.Application.Services.implementation
 {
@@ -44,8 +45,9 @@ namespace Hr.Application.Services.implementation
         }
       public bool CheckPublicHolidaysExists(PublicHolidaysDTO publicHolidayDTO)
         {
-            return unitOfWork.PublicHolidaysRepository.Any(x => x.Name.ToLower() == publicHolidayDTO.Name.ToLower());
+            return unitOfWork.PublicHolidaysRepository.Any(x => x.Name.ToLower() == publicHolidayDTO.Name.ToLower() || x.Day.Date == DateTime.Parse(publicHolidayDTO.Date).Date);
         }
+      
 
 
 
@@ -55,6 +57,5 @@ namespace Hr.Application.Services.implementation
 
 
 
-
-    }
+}
 }
