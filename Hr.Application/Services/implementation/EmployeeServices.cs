@@ -266,19 +266,25 @@ namespace Hr.Application.Services.implementation
             }
         }
 
-     
+
         public void Remove(int id)
         {
             var emp = uniteOfWork.EmployeeRepository.Get(x => x.Id == id);
-
-            if (emp != null)
+            var user = userManager.FindByIdAsync(emp.UserId).Result;
+            var generalSetting = uniteOfWork.GeneralSettingsRepository.Get(x => x.EmployeeId == id, includeProperties: "Weekends");
+            if (generalSetting != null)
+            {
+                uniteOfWork.GeneralSettingsRepository.Remove(generalSetting);
+                uniteOfWork.Save();
+            }
+            if (emp != null || user != null)
             {
                 var userId = emp.UserId;
                 uniteOfWork.EmployeeRepository.Remove(emp);
 
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    var user = userManager.FindByIdAsync(userId).Result;
+                    // var user = userManager.FindByIdAsync(userId).Result;
                     if (user != null)
                     {
                         var result = userManager.DeleteAsync(user).Result;
