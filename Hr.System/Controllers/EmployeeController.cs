@@ -72,18 +72,15 @@ namespace Hr.System.Controllers
                         ModelState.AddModelError("FirstName", "First Name and Last Name is founded ");
                         return BadRequest(ModelState);
                     }
-                    DateTime BirthDate = DateTime.Parse(EmployeeDto.BirthDate);
-                    DateTime HireDate = DateTime.Parse(EmployeeDto.HireDate);
-                    var age = BirthDate - HireDate;
+                    DateTime BirthDate = DateTime.Parse(EmployeeDto.BirthDate).Date;
+                    DateTime dateTime = DateTime.Now;
+                    // DateTime HireDate = DateTime.Parse(employeeDto.HireDate).Date;
+                    var age = dateTime - BirthDate;
                     int years = (int)(age.TotalDays / 365.25);
-                    if (HireDate <= BirthDate || years >18)
+                    if (years < 18)
                     {
-                        ModelState.AddModelError("HireDate", "HireDate is less than BirthDate ");
-                        return BadRequest(new
-                        {
-                            Message = "HireDate is less than BirthDate",
-                           Errors = ModelState.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray())
-                         });
+                        ModelState.AddModelError("HireDate", "Age must grater than 18 ");
+                        return BadRequest(ModelState);
                     }
                     employeeServices.CreateEmployee(EmployeeDto);
 
@@ -123,6 +120,16 @@ namespace Hr.System.Controllers
                         x.ID != employeeDto.ID))
                     {
                         ModelState.AddModelError("FirstName", "the name is founded plz enter another name");
+                        return BadRequest(ModelState);
+                    }
+                    DateTime BirthDate = DateTime.Parse(employeeDto.BirthDate).Date;
+                    DateTime dateTime = DateTime.Now;
+                   // DateTime HireDate = DateTime.Parse(employeeDto.HireDate).Date;
+                    var age = dateTime - BirthDate;
+                    int years = (int)(age.TotalDays / 365.25);
+                    if ( years < 18)
+                    {
+                        ModelState.AddModelError("HireDate", "Age must grater than 18 ");
                         return BadRequest(ModelState);
                     }
                     employeeServices.UpdateEmployee(employeeDto, id);

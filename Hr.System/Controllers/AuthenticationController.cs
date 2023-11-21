@@ -21,10 +21,10 @@ namespace Hr.System.Controllers
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly SignInManager<ApplicationUser> signInManager;
 
-        public AuthenticationController(UserManager<ApplicationUser> userManager , 
-            IConfiguration config , 
+        public AuthenticationController(UserManager<ApplicationUser> userManager,
+            IConfiguration config,
             RoleManager<IdentityRole> roleManager
-            ,SignInManager<ApplicationUser> signInManager)
+            , SignInManager<ApplicationUser> signInManager)
         {
             this.userManager = userManager;
             this.config = config;
@@ -40,17 +40,17 @@ namespace Hr.System.Controllers
                 ApplicationUser user = new ApplicationUser();
                 if (userDto.EmailOrUserName != null)
                 {
-                      user = await userManager.FindByNameAsync(userDto.EmailOrUserName);
+                    user = await userManager.FindByNameAsync(userDto.EmailOrUserName);
                     if (user == null)
                     {
                         user = await userManager.FindByEmailAsync(userDto.EmailOrUserName);
                     }
                 }
-                
-               
+
+
                 if (user != null)
                 {
-                   
+
                     if (user.PasswordHash == userDto.Password)
                     {
 
@@ -74,9 +74,9 @@ namespace Hr.System.Controllers
                                 {
                                     claims.Add(new Claim(permission.Type, permission.Value));
                                 }
-                               
+
                             }
-                           
+
                         }
 
                         SecurityKey securityKey =
@@ -103,19 +103,62 @@ namespace Hr.System.Controllers
                     }
 
                 }
-                return Unauthorized( new { message ="Email or User Name Not Exist "});
+                return Unauthorized(new { message = "Email or User Name Not Exist " });
             }
             return Unauthorized(new { message = "Invaild Email or Password" });
         }
 
+
+        // Add refresh token generation in your AuthenticationController
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> RefreshToken()
+        {
+            // Get the current user's claims
+            var user = await userManager.GetUserAsync(User);
+            var userClaims = await userManager.GetClaimsAsync(user);
+
+            // Claims Token for the new token
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+            // Add user-specific claims
+            claims.AddRange(userClaims);
+
+            // Create a new security key and signing credentials
+            SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JWT:Secret"]));
+            SigningCredentials signincred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            // Create a new JWT token with the updated claims
+            JwtSecurityToken newToken = new JwtSecurityToken(
+                issuer: config["JWT:ValidIssuer"],
+                audience: config["JWT:ValidAudiance"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(24),
+                signingCredentials: signincred
+            );
+
+            // Return the new token to the client
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(newToken),
+                expiration = newToken.ValidTo
+            });
+        }
+
+
         [HttpPost("Logout")]
-        [Authorize]  
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
-            await signInManager.SignOutAsync();  
-            return NoContent();  
+            await signInManager.SignOutAsync();
+            return NoContent();
         }
     }
-    
+
 
 }

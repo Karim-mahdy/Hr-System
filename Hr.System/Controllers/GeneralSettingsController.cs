@@ -173,7 +173,8 @@ namespace Hr.System.Controllers
 
                     if (Counter == 7)
                     {
-                        return BadRequest("please select day!");
+                        ModelState.AddModelError("Days", "Add Days to employee ");
+                        return BadRequest(ModelState);
                     }
 
                     if (!ModelState.IsValid)
@@ -237,6 +238,22 @@ namespace Hr.System.Controllers
             try
             {
 
+                if (model.Weekends == null)
+                {
+                    model.Weekends = new List<WeekendCheckDTO>();
+
+                    // Initialize the list with days of the week and isSelected set to false
+                    string[] daysOfWeek = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+
+                    foreach (var day in daysOfWeek)
+                    {
+                        model.Weekends.Add(new WeekendCheckDTO
+                        {
+                            displayValue = day,
+                            isSelected = false
+                        });
+                    }
+                }
                 int Counter = 0;
                 foreach (var item in model.Weekends)
                 {
@@ -248,7 +265,8 @@ namespace Hr.System.Controllers
                         
                 if (Counter == 7)
                 {
-                    return BadRequest("please select day!");
+                    ModelState.AddModelError("Days", "Add Days to employee ");
+                    return BadRequest(ModelState);
                 }
 
                 if (!ModelState.IsValid)
@@ -260,7 +278,8 @@ namespace Hr.System.Controllers
 
                 if (generalExists)
                 {
-                    return BadRequest(new { error = "Custom settings Already Exists!" });
+                    ModelState.AddModelError("CustomeSettings", "Custom settings Already Exists!");
+                    return BadRequest(ModelState);
                 }
 
                 if (model.empid == 0)
@@ -269,7 +288,8 @@ namespace Hr.System.Controllers
                     var existsNull = generalSettingsService.GetGeneralSettingForAll();
                     if (existsNull != null)
                     {
-                        return BadRequest(new { error = "General Settings Already Exists!" });
+                        ModelState.AddModelError("GeneralSettings", "General Settings Already Exists!");
+                        return BadRequest(ModelState);
                     }
                 }
 
@@ -293,7 +313,8 @@ namespace Hr.System.Controllers
                     };
                     if (weekendService.CheckPublicHolidaysExists(weekend))
                     {
-                        return BadRequest($"the day {weekend.Name} already selected before!");
+                        ModelState.AddModelError("WeekendDay", $"the day {weekend.Name} already selected before!");
+                        return BadRequest(ModelState);
                     }
                     weekendService.Create(weekend);
 

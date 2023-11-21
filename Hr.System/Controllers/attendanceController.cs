@@ -146,18 +146,18 @@ namespace Hr.System.Controllers
                     List<string> employeeWeekendDays = attendanceServices.GetEmployeeWeekendDays(attendanceEmployeDto.SelectedEmployee);
                     if (attendanceServices.CheckAttendanceExists(attendanceEmployeDto))
                     {
-                        ModelState.AddModelError("Error", "The Employee Has Attendance in this day");
+                        ModelState.AddModelError("Exists", "The Employee Has Attendance in this day");
                         return BadRequest(ModelState);
                     }
                     if (employeeWeekendDays.Contains(dayOfWeek))
                     {
-                        ModelState.AddModelError("Error", "Attendance on a weekend day is not allowed.");
+                        ModelState.AddModelError("Date", "Attendance on a weekend day is not allowed.");
                         return BadRequest(ModelState);
                     }
                   
                     if (arrivalTime < arrivalTimeFromDb)
                     {
-                        ModelState.AddModelError("Error", $"Arrival Time Must Be Greater Than Defualt Arrival For Employee {arrivalTimeFromDb}");
+                        ModelState.AddModelError("ArrivalTime", $"Arrival Time Must Be Greater Than Defualt Arrival For Employee {arrivalTimeFromDb}");
                         return BadRequest(ModelState);
                     }
                     var attendanceDto = new AttendanceEmployeDto
