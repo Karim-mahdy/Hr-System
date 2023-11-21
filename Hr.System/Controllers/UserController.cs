@@ -82,8 +82,8 @@ namespace Hr.System.Controllers
             }
         }
 
-       
-        
+
+
         [HttpGet("GetUserById")]
         public async Task<IActionResult> GetUserById(string userId)
         {
@@ -170,6 +170,21 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    var ExitedUser = await userManager.FindByNameAsync(model.UserName);
+                    var ExitedEmail = await userManager.FindByEmailAsync(model.Email);
+
+                    if (ExitedUser != null )
+                    {
+                        ModelState.AddModelError("UserName", "User Name is Exited");
+                        return BadRequest(ModelState);
+                    }
+                    if (ExitedEmail != null)
+                    {
+                        ModelState.AddModelError("Email", "Email is Exited");
+                        return BadRequest(ModelState);
+                    }
+                   
+
                     var user = new ApplicationUser
                     {
                         UserName = model.UserName,
@@ -210,7 +225,7 @@ namespace Hr.System.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id ,UserRoleFromDto model)
+        public async Task<IActionResult> UpdateUser(string id, UserRoleFromDto model)
         {
 
             using (var transaction = context.Database.BeginTransaction())
@@ -221,6 +236,11 @@ namespace Hr.System.Controllers
                     if (user == null)
                     {
                         return NotFound();
+                    }
+                    if (userManager.Users.Where(x => x.UserName != SD.AdminUserName).Any(x => x.Email == model.Email && x.UserName == model.UserName && x.Id != model.UserId))
+                    {
+                        ModelState.AddModelError("UserName", "User  Name  Or Email is Exited");
+                        return BadRequest(ModelState);
                     }
 
                     user.UserName = model.UserName;

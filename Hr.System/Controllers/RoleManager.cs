@@ -121,7 +121,10 @@ namespace Hr.System.Controllers
 
                 }
                 if (counter == 24)
+                {
                     ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
+                    return BadRequest(ModelState);
+                }
 
                 if (!ModelState.IsValid)
                 {
@@ -131,7 +134,7 @@ namespace Hr.System.Controllers
                 if (roleManager.RoleExistsAsync(model.RoleName).Result)
                 {
                     ModelState.AddModelError("RoleName", "This Group Exists!!");
-                    return Ok(model);
+                    return BadRequest(ModelState) ;
                 }
 
                 await roleManager.CreateAsync(new IdentityRole { Name = model.RoleName.Trim() });
@@ -175,7 +178,10 @@ namespace Hr.System.Controllers
 
                     }
                     if (counter == 24)
+                    {
                         ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
+                        return BadRequest(ModelState);
+                    }
 
                     var roleClaim = await roleManager.GetClaimsAsync(role);
                     foreach (var claim in roleClaim)

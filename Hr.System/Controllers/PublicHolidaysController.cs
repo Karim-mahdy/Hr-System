@@ -94,17 +94,13 @@ namespace Hr.System.Controllers
                     }
                     else
                     {
-                        return BadRequest(new
-                        {
-                            message = "Date should be greater than today"
-                        });
+                        ModelState.AddModelError("Date", " should be greater than today");
+                        return BadRequest(ModelState);
                     }
                   
                 }
-                return BadRequest(new
-                {
-                    message= "The Public Holiday already exists"
-                });
+                ModelState.AddModelError("Name", "Name or Date is Exited!!");
+                return BadRequest(ModelState);
             }
             catch (Exception ex)
             {
@@ -130,12 +126,11 @@ namespace Hr.System.Controllers
                 DateTime publicHolidayDate = DateTime.Parse(publicHolidayDTO.Date);
                 if( publicHolidayDate.Date < date.Date)
                 {
-                    return BadRequest(new
-                    {
-                        message = "Date should be greater than today"
-                    });
+
+                    ModelState.AddModelError("Date", " should be greater than today");
+                    return BadRequest(ModelState);
                 }
-                if (!publicHolidaysService.GetAllPublicHolidays().Any(x => x.Name.ToLower() == publicHolidayDTO.Name.ToLower()  && x.Id != id))
+                if (publicHolidaysService.GetAllPublicHolidays().Any(x => x.Name.ToLower() == publicHolidayDTO.Name.ToLower()  && x.Day.Date==publicHolidayDate.Date && x.Id != id))
                 {
                     existingPublicHoliday.Id = id;
                     existingPublicHoliday.Name = publicHolidayDTO.Name;
@@ -143,7 +138,8 @@ namespace Hr.System.Controllers
                     publicHolidaysService.Update(existingPublicHoliday);
                     return Ok(publicHolidayDTO);
                 }
-                return BadRequest(publicHolidayDTO);
+                ModelState.AddModelError("Name", "Name or Date is Exited!!");
+                return BadRequest(ModelState);
             }
             catch (Exception ex)
             {

@@ -41,7 +41,10 @@ namespace Hr.System
 
                 ).AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders(); ;
-
+            builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+            {
+                options.ValidationInterval = TimeSpan.Zero;
+            });
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
