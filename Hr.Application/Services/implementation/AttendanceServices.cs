@@ -252,12 +252,22 @@ namespace Hr.Application.Services.implementation
             {
                 var attendanceFromDb = uniteOfWork.AttendanceRepository.Get(x => x.Id == id);
                 TimeSpan arrivalTime = TimeSpan.ParseExact(attendanceDto.ArrivalTime, "hh\\:mm", CultureInfo.InvariantCulture);
-                TimeSpan leaveTime = TimeSpan.ParseExact(attendanceDto.LeaveTime, "hh\\:mm", CultureInfo.InvariantCulture);
-                if (attendanceFromDb != null)
+                TimeSpan leaveTime =new TimeSpan();
+                if (attendanceDto.LeaveTime != null)
                 {
+                    leaveTime = TimeSpan.ParseExact(attendanceDto.LeaveTime, "hh\\:mm", CultureInfo.InvariantCulture);
                     attendanceFromDb.Date = DateTime.Now;
                     attendanceFromDb.ArrivalTime = arrivalTime;
                     attendanceFromDb.LeaveTime = leaveTime;
+                    attendanceFromDb.EmployeeId = attendanceDto.SelectedEmployee;
+                    uniteOfWork.AttendanceRepository.update(attendanceFromDb);
+                    uniteOfWork.Save();
+                }
+                else if (attendanceDto.LeaveTime == null)
+                {
+                    attendanceFromDb.Date = DateTime.Now;
+                    attendanceFromDb.ArrivalTime = arrivalTime;
+                    attendanceFromDb.LeaveTime = null;
                     attendanceFromDb.EmployeeId = attendanceDto.SelectedEmployee;
                     uniteOfWork.AttendanceRepository.update(attendanceFromDb);
                     uniteOfWork.Save();

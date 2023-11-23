@@ -20,7 +20,7 @@ namespace Hr.System.Controllers
             this.attendanceServices = attendanceServices;
             this.employeeServices = employeeServices;
         }
- 
+
 
         [HttpGet("GetAllEmployeeWithoutAttendance")]
         public IActionResult GetAllEmployeeWithoutAttendance()
@@ -112,7 +112,7 @@ namespace Hr.System.Controllers
             try
             {
                 var attendanceDto = attendanceServices.GetAttendanceId(id);
-                
+
                 if (attendanceDto == null)
                 {
                     return NotFound();
@@ -136,7 +136,7 @@ namespace Hr.System.Controllers
                     DateTime date = DateTime.Parse(attendanceEmployeDto.Date);
                     DateTime dateToCheck = date;
 
-                    
+
 
                     string dayOfWeek = attendanceServices.GetDayOfWeekForDate(dateToCheck);
                     var employee = employeeServices.GetEmployeeId(attendanceEmployeDto.SelectedEmployee);
@@ -154,7 +154,15 @@ namespace Hr.System.Controllers
                         ModelState.AddModelError("Date", "Attendance on a weekend day is not allowed.");
                         return BadRequest(ModelState);
                     }
-                  
+ 
+                    TimeSpan.TryParse(employee.LeaveTime, out TimeSpan leave);
+                    if (leave < arrivalTime)
+                    {
+                        ModelState.AddModelError("Error", $"Arrival Time Must Be less Than Defualt Leave For Employee {leave}");
+                        return BadRequest(ModelState);
+                    }
+
+
                     if (arrivalTime < arrivalTimeFromDb)
                     {
                         ModelState.AddModelError("ArrivalTime", $"Arrival Time Must Be Greater Than Defualt Arrival For Employee {arrivalTimeFromDb}");
@@ -174,7 +182,7 @@ namespace Hr.System.Controllers
                 }
                 else
                 {
-                   return BadRequest(ModelState);
+                    return BadRequest(ModelState);
                 }
             }
             catch (Exception ex)
@@ -191,12 +199,11 @@ namespace Hr.System.Controllers
                 if (ModelState.IsValid)
                 {
 
-                    if (attendanceEmployeDto == null ||
-                      !TimeSpan.TryParse(attendanceEmployeDto.ArrivalTime, out TimeSpan arrivalTime) ||
-                      !TimeSpan.TryParse(attendanceEmployeDto.LeaveTime, out TimeSpan leaveTime) ||
-                       arrivalTime >= leaveTime)
+                    TimeSpan.TryParse(attendanceEmployeDto.ArrivalTime, out TimeSpan arrivalTime);
+                    TimeSpan.TryParse(attendanceEmployeDto.LeaveTime, out TimeSpan leaveTime);
+                    if (attendanceEmployeDto.LeaveTime != null && arrivalTime >= leaveTime)
                     {
-                        ModelState.AddModelError("Error", "Leave time cannot be before or equal to arrival time.");
+                        ModelState.AddModelError("Error", "Leave time cannot be Less than or equal to arrival time.");
                         return BadRequest(ModelState);
                     }
                     var employee = employeeServices.GetEmployeeId(attendanceEmployeDto.SelectedEmployee);
@@ -207,8 +214,8 @@ namespace Hr.System.Controllers
                         return BadRequest(ModelState);
                     }
                     if (attendanceServices.GetAllAttendance().Any(
-                        x => x.Date==attendanceEmployeDto.Date &&
-                        x.SelectedEmployee==attendanceEmployeDto.SelectedEmployee &&
+                        x => x.Date == attendanceEmployeDto.Date &&
+                        x.SelectedEmployee == attendanceEmployeDto.SelectedEmployee &&
                         x.Id != attendanceEmployeDto.Id))
                     {
                         ModelState.AddModelError("Error", "the name is founded ");
@@ -225,7 +232,7 @@ namespace Hr.System.Controllers
             }
         }
 
-        
+
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
@@ -236,7 +243,7 @@ namespace Hr.System.Controllers
 
                 if (deleted)
                 {
-                    return Ok(new { message = "Attendance record deleted successfully."});
+                    return Ok(new { message = "Attendance record deleted successfully." });
                 }
                 else
                 {

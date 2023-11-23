@@ -173,7 +173,7 @@ namespace Hr.System.Controllers
 
                     if (Counter == 7)
                     {
-                        ModelState.AddModelError("Days", "Add Days to employee ");
+                        ModelState.AddModelError("Days", "Please Select Day ");
                         return BadRequest(ModelState);
                     }
 
@@ -269,7 +269,7 @@ namespace Hr.System.Controllers
                         
                 if (Counter == 7)
                 {
-                    ModelState.AddModelError("Days", "Add Days to employee ");
+                    ModelState.AddModelError("Days", "Please Select Day ");
                     return BadRequest(ModelState);
                 }
 
