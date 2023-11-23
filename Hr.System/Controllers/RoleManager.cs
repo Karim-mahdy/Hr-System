@@ -19,11 +19,14 @@ namespace Hr.System.Controllers
     {
         private readonly IRoleService _roleService;
         private readonly RoleManager<IdentityRole> roleManager;
-    
-        public RoleManager(IRoleService roleService, RoleManager<IdentityRole> roleManager )
+        private readonly UserManager<ApplicationUser> userManager;
+
+        public RoleManager(IRoleService roleService, RoleManager<IdentityRole> roleManager,
+             UserManager<ApplicationUser> userManager)
         {
             _roleService = roleService;
             this.roleManager = roleManager;
+            this.userManager = userManager;
         }
 
         [HttpGet]
@@ -197,6 +200,14 @@ namespace Hr.System.Controllers
                     }
                     role.Name = model.RoleName;
                     await roleManager.UpdateAsync(role);
+
+                    var usersWithUpdatedRole = await userManager.GetUsersInRoleAsync(role.Name);
+                    foreach (var user in usersWithUpdatedRole)
+                    {
+                        // Increment the token version
+                        await userManager.UpdateSecurityStampAsync(user);
+                    }
+
                     return Ok(model);
 
                 }

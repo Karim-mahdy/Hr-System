@@ -59,6 +59,7 @@ namespace Hr.System.Controllers
                         claims.Add(new Claim(ClaimTypes.Name, userDto.EmailOrUserName));
                         claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
                         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+                        claims.Add(new Claim("token_version", user.SecurityStamp));
                         //get role
                         var roles = await userManager.GetRolesAsync(user);
                         foreach (var role in roles)
@@ -85,6 +86,7 @@ namespace Hr.System.Controllers
                             claims: claims,
                              expires: DateTime.Now.AddHours(24),
                             signingCredentials: signincred
+
                             );
 
                         return Ok(new
@@ -100,46 +102,56 @@ namespace Hr.System.Controllers
             return Unauthorized(new { message = "Invaild Email or Password" });
         }
 
+        [HttpGet("GetTokenVersion")]
+        public async Task<IActionResult> GetTokenVersion()
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                return Ok(user.SecurityStamp);
+            }
+            return null;
+        }
 
-        // Add refresh token generation in your AuthenticationController
-        //[HttpPost("RefreshToken")]
-        //public async Task<IActionResult> RefreshToken()
-        //{
-        //    // Get the current user's claims
-        //    var user = await userManager.GetUserAsync(User);
-        //    var userClaims = await userManager.GetClaimsAsync(user);
+       // Add refresh token generation in your AuthenticationController
+       [HttpPost("RefreshToken")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            // Get the current user's claims
+            var user = await userManager.GetUserAsync(User);
+            var userClaims = await userManager.GetClaimsAsync(user);
 
-        //    // Claims Token for the new token
-        //     var claims = new List<Claim>
-        //     {
-        //        new Claim(ClaimTypes.Name, user.UserName),
-        //        new Claim(ClaimTypes.NameIdentifier, user.Id),
-        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        //     };
+            // Claims Token for the new token
+            var claims = new List<Claim>
+             {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+             };
 
-        //    // Add user-specific claims
-        //    claims.AddRange(userClaims);
+            // Add user-specific claims
+            claims.AddRange(userClaims);
 
-        //    // Create a new security key and signing credentials
-        //    SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JWT:Secret"]));
-        //    SigningCredentials signincred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            // Create a new security key and signing credentials
+            SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JWT:Secret"]));
+            SigningCredentials signincred = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        //    // Create a new JWT token with the updated claims
-        //    JwtSecurityToken newToken = new JwtSecurityToken(
-        //        issuer: config["JWT:ValidIssuer"],
-        //        audience: config["JWT:ValidAudiance"],
-        //        claims: claims,
-        //        expires: DateTime.Now.AddHours(24),
-        //        signingCredentials: signincred
-        //    );
+            // Create a new JWT token with the updated claims
+            JwtSecurityToken newToken = new JwtSecurityToken(
+                issuer: config["JWT:ValidIssuer"],
+                audience: config["JWT:ValidAudiance"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(24),
+                signingCredentials: signincred
+            );
 
-        //    // Return the new token to the client
-        //    return Ok(new
-        //    {
-        //        token = new JwtSecurityTokenHandler().WriteToken(newToken),
-        //        expiration = newToken.ValidTo
-        //    });
-        //}
+            // Return the new token to the client
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(newToken),
+                expiration = newToken.ValidTo
+            });
+        }
 
 
         [HttpPost("Logout")]
