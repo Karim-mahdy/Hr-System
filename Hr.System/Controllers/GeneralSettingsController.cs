@@ -196,6 +196,8 @@ namespace Hr.System.Controllers
                             }
                             else
                             {
+                                //var updatedweekends = weekendService.GetAllWeekends().Where(x=>x.GeneralSettingsId== id);
+                                //employeeSetting.Weekends =updatedweekends.ToList();
                                 employeeSetting.OvertimeHour = updatedSettings.OvertimeHour;
                                 employeeSetting.DiscountHour = updatedSettings.DiscountHour;
                                 generalSettingsService.Update(employeeSetting);
@@ -220,6 +222,8 @@ namespace Hr.System.Controllers
                 }
                 else
                 {
+                    //var updatedweekends = weekendService.GetAllWeekends().Where(x => x.GeneralSettingsId == id);
+                    //employeeSettings.Weekends = updatedweekends.ToList();
                     employeeSettings.OvertimeHour = updatedSettings.OvertimeHour;
                     employeeSettings.DiscountHour = updatedSettings.DiscountHour;
                     generalSettingsService.Update(employeeSettings);

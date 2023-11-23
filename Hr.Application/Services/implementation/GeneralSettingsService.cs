@@ -69,7 +69,8 @@ namespace Hr.Application.Services.implementation
         }
         public GeneralSettings GetGeneralSettingByID(int id)
         {
-            return unitOfWork.GeneralSettingsRepository.Get(x => x.Id == id,includeProperties: "Weekends");
+            //, includeProperties: "Weekends"
+            return unitOfWork.GeneralSettingsRepository.Get(x => x.Id == id);
         }
 
 

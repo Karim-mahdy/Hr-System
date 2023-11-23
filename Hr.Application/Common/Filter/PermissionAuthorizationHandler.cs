@@ -1,32 +1,35 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Hr.Application.Common.Filter;
+using Hr.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
-namespace Hr.Application.Common.Filter
+
+public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirment>
 {
-    public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirment>
+    private readonly IConfiguration configuration;
+    private readonly UserManager<ApplicationUser> userManager;
+  
+
+    public PermissionAuthorizationHandler(IConfiguration configuration)
     {
-        public PermissionAuthorizationHandler()
+        this.configuration = configuration;
+     
+    }
+
+    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirment requirement)
+    {
+        if (context.User == null)      
+            return;
+      
+        // Accessing a setting from the configuration file
+        string validIssuer = configuration["JWT:ValidIssuer"];
+        var canAccess = context.User.Claims.Any(c => c.Type == "Permission" && c.Value == requirement.Permission && c.Issuer == validIssuer);
+
+        if (canAccess)
         {
-
-        }
-
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirment requirement)
-        {
-            if (context.User == null)
-                return;
-          
-            var canAccess = context.User.Claims.Any(c => c.Type == "Permission" && c.Value == requirement.Permission && c.Issuer == "LOCAL AUTHORITY");
-
-            if (canAccess)
-            {
-                context.Succeed(requirement);
-                return;
-            }
+            context.Succeed(requirement);
+            return;
         }
     }
 }

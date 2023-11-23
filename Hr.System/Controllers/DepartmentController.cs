@@ -20,8 +20,10 @@ namespace Hr.System.Controllers
             this.departmentService = departmentService;
         }
 
+
+        
+        [Authorize( Permission.Department.View)]
         [HttpGet]
-     
         public ActionResult GetAll()
         {
             try
@@ -41,6 +43,7 @@ namespace Hr.System.Controllers
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
+        [Authorize(Permission.Department.Edit)]
         [HttpGet("{id}")]
         public ActionResult Get(int id)
         {
@@ -59,7 +62,7 @@ namespace Hr.System.Controllers
             }
 
         }
-
+        [Authorize(Permission.Department.Create)]
         [HttpPost]
         public ActionResult Create([FromBody] DepartmentDTO departmentDTO)
         {
@@ -90,7 +93,7 @@ namespace Hr.System.Controllers
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
-
+        [Authorize(Permission.Department.Edit)]
         [HttpPut("{id}")]
         public ActionResult Edit(int id, [FromBody] DepartmentDTO updatedDepartmentDTO)
         {
@@ -116,7 +119,7 @@ namespace Hr.System.Controllers
                 return StatusCode(500, new { error = "An error occurred", message = ex.Message });
             }
         }
-
+        [Authorize(Permission.Department.Delete)]
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {

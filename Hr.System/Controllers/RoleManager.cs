@@ -2,6 +2,8 @@
 using Hr.Application.Common.Global;
 using Hr.Application.DTOs.Role;
 using Hr.Application.Services.implementation;
+using Hr.Application.Services.Interfaces;
+using Hr.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -17,8 +19,8 @@ namespace Hr.System.Controllers
     {
         private readonly IRoleService _roleService;
         private readonly RoleManager<IdentityRole> roleManager;
-
-        public RoleManager(IRoleService roleService, RoleManager<IdentityRole> roleManager)
+    
+        public RoleManager(IRoleService roleService, RoleManager<IdentityRole> roleManager )
         {
             _roleService = roleService;
             this.roleManager = roleManager;
@@ -195,8 +197,8 @@ namespace Hr.System.Controllers
                     }
                     role.Name = model.RoleName;
                     await roleManager.UpdateAsync(role);
-
                     return Ok(model);
+
                 }
                 else
                 {
@@ -215,6 +217,13 @@ namespace Hr.System.Controllers
         {
             try
             {
+                var role = await roleManager.FindByIdAsync(roleId);
+                if (role != null && role.Name == SD.Roles.SuperAdmin.ToString())
+                {
+                   
+                    ModelState.AddModelError("Role", "Can't Delete Super Admin Role ");
+                    return BadRequest(ModelState);
+                }
                 await _roleService.DeleteRoleAsync(roleId);
                 return NoContent();
             }

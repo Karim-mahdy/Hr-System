@@ -40,11 +40,8 @@ namespace Hr.System
                 }
 
                 ).AddEntityFrameworkStores<ApplicationDbContext>()
-                 .AddDefaultTokenProviders(); ;
-            builder.Services.Configure<SecurityStampValidatorOptions>(options =>
-            {
-                options.ValidationInterval = TimeSpan.Zero;
-            });
+                 .AddDefaultTokenProviders(); 
+           
 
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
@@ -84,8 +81,10 @@ namespace Hr.System
             {
                 options.ValidationInterval = TimeSpan.Zero;
             });
+          
 
-            //CORS configration
+          
+
             builder.Services.AddCors(corsOptions => {
                 corsOptions.AddPolicy("MyPolicy", corsPolicyBuilder =>
                 {
@@ -147,9 +146,12 @@ namespace Hr.System
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCors("MyPolicy");
+        
             app.UseAuthentication();
-            app.UseAuthorization();
+           
 
+            app.UseAuthorization();
+            
 
             app.MapControllers();
             DbInitializer.Configure(app);

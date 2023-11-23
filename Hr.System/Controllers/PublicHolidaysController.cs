@@ -1,7 +1,9 @@
-﻿using Hr.Application.DTOs;
+﻿using Hr.Application.Common.Global;
+using Hr.Application.DTOs;
 using Hr.Application.Services.implementation;
 using Hr.Application.Services.Interfaces;
 using Hr.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +18,7 @@ namespace Hr.System.Controllers
         {
             this.publicHolidaysService = publicHolidaysService;
         }
+        [Authorize(policy:Permission.GeneralSetting.View)]
         [HttpGet]
         public ActionResult GetAll()
         {
@@ -130,7 +133,8 @@ namespace Hr.System.Controllers
                     ModelState.AddModelError("Date", " should be greater than today");
                     return BadRequest(ModelState);
                 }
-                if (publicHolidaysService.GetAllPublicHolidays().Any(x => x.Name.ToLower() == publicHolidayDTO.Name.ToLower()  && x.Day.Date==publicHolidayDate.Date && x.Id != id))
+                if (!publicHolidaysService.GetAllPublicHolidays().Any(x => (x.Name.ToLower() == publicHolidayDTO.Name.ToLower()  
+                        || x.Day.Date==publicHolidayDate.Date) && x.Id != id))
                 {
                     existingPublicHoliday.Id = id;
                     existingPublicHoliday.Name = publicHolidayDTO.Name;
