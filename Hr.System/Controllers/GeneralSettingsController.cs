@@ -350,7 +350,7 @@ namespace Hr.System.Controllers
                     return NotFound(new { error = "Not Found" });
                 }
                 generalSettingsService.Remove(remove);
-                return NoContent();
+                return Ok(remove);
             }
             catch (Exception ex)
             {

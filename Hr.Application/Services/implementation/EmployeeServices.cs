@@ -77,10 +77,10 @@ namespace Hr.Application.Services.implementation
         public bool CheckEmployeeExists(GetAllEmployeeDto EmployeeDto)
         {
           return  uniteOfWork.EmployeeRepository
-                .Any(x => x.FirstName.ToLower() == EmployeeDto.FirstName.ToLower() 
-                     && x.LastName.ToLower() == EmployeeDto.LastName.ToLower() 
-                     && x.DepartmentId==EmployeeDto.DepartmentId
-                     && x.NationalId == EmployeeDto.NationalId);
+                 .Any( x => (x.FirstName.ToLower() == EmployeeDto.FirstName.ToLower() 
+                     && x.LastName.ToLower() == EmployeeDto.LastName.ToLower())||
+                     (x.DepartmentId == EmployeeDto.DepartmentId &&
+                         x.NationalId == EmployeeDto.NationalId));
         }
 
         public IEnumerable<GetAllEmployeeDto> GetAllEmployee()

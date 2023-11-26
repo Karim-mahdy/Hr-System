@@ -69,7 +69,7 @@ namespace Hr.System.Controllers
                     }
                     if (employeeServices.CheckEmployeeExists(EmployeeDto))
                     {
-                        ModelState.AddModelError("FirstName", "First Name and Last Name is founded ");
+                        ModelState.AddModelError("FirstName", "Employee Already Exist Check Name or Department or National Id");
                         return BadRequest(ModelState);
                     }
                     DateTime BirthDate = DateTime.Parse(EmployeeDto.BirthDate).Date;
@@ -113,15 +113,16 @@ namespace Hr.System.Controllers
                         return BadRequest(ModelState);
                     }
                     if (employeeServices.GetAllEmployee().Any(
-                        x => x.FirstName.ToLower() == employeeDto.FirstName.ToLower()
-                        && x.LastName.ToLower() == employeeDto.LastName.ToLower() &&
+                        x => x.FirstName.ToLower() == employeeDto.FirstName.ToLower() &&
+                        x.LastName.ToLower() == employeeDto.LastName.ToLower() &&
                         x.DepartmentId == employeeDto.DepartmentId &&
                         x.NationalId ==employeeDto.NationalId &&
                         x.ID != employeeDto.ID))
                     {
-                        ModelState.AddModelError("FirstName", "the name is founded plz enter another name");
+                        ModelState.AddModelError("FirstName", "Employee Already Exist Check Name or Department or National Id");
                         return BadRequest(ModelState);
                     }
+
                     DateTime BirthDate = DateTime.Parse(employeeDto.BirthDate).Date;
                     DateTime dateTime = DateTime.Now;
                    // DateTime HireDate = DateTime.Parse(employeeDto.HireDate).Date;

@@ -124,8 +124,8 @@ namespace Hr.System.Controllers
                         counter++;
                     }
 
-                }
-                if (counter == 24)
+                } 
+                if (counter == 24 || (counter == 1 && model.RoleClaims.Any(x => x.DisplayValue == null)))
                 {
                     ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
                     return BadRequest(ModelState);
@@ -182,12 +182,19 @@ namespace Hr.System.Controllers
                         }
 
                     }
+
+                    if (_roleService.GetAllRolesAsync().Result.Any(R=>R.Name == model.RoleName && R.Id != roleId))
+                    {
+                        ModelState.AddModelError("RoleName", "This Group Exists!!");
+                        return BadRequest(ModelState);
+                    }
+
                     if (counter == 24)
                     {
                         ModelState.AddModelError("RoleClaims", "Please Select the Permissions");
                         return BadRequest(ModelState);
                     }
-
+                    
                     var roleClaim = await roleManager.GetClaimsAsync(role);
                     foreach (var claim in roleClaim)
                     {
