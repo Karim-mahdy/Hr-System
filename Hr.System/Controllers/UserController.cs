@@ -170,8 +170,8 @@ namespace Hr.System.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var ExitedUser = await userManager.FindByNameAsync(model.UserName);
-                    var ExitedEmail = await userManager.FindByEmailAsync(model.Email);
+                    var ExitedUser = await userManager.FindByNameAsync(model.UserName.Trim().ToLower());
+                    var ExitedEmail = await userManager.FindByEmailAsync(model.Email.Trim().ToLower());
 
                     if (ExitedUser != null )
                     {
@@ -237,9 +237,19 @@ namespace Hr.System.Controllers
                     {
                         return NotFound();
                     }
-                    if (userManager.Users.Where(x => x.UserName != SD.AdminUserName).Any(x => x.Email == model.Email && x.UserName == model.UserName && x.Id != model.UserId))
+                    if (userManager.Users.Where(x => x.UserName != SD.AdminUserName)
+                        .Any(x => x.Email == model.Email.Trim().ToLower()  
+                         && x.Id != model.UserId))
+
                     {
-                        ModelState.AddModelError("UserName", "User  Name  Or Email is Exited");
+                        ModelState.AddModelError("UserName", " Email is Exited");
+                        return BadRequest(ModelState);
+                    }
+                    if (userManager.Users.Where(x => x.UserName != SD.AdminUserName)
+                           .Any(x => x.UserName == model.UserName.Trim().ToLower()
+                           && x.Id != model.UserId))
+                    {
+                        ModelState.AddModelError("UserName", "User  Name is Exited");
                         return BadRequest(ModelState);
                     }
 
@@ -258,18 +268,24 @@ namespace Hr.System.Controllers
 
                         // Remove existing roles
                         var userRoles = await userManager.GetRolesAsync(user);
-                        var removeRolesResult = await userManager.RemoveFromRolesAsync(user, userRoles);
-
-                        if (removeRolesResult.Succeeded)
+                        if (userRoles != null || userRoles == null)
                         {
-                            var addRolesResult = await userManager.AddToRolesAsync(user, selectedRoles.Select(role => role.Name));
+                            var removeRolesResult = await userManager.RemoveFromRolesAsync(user, userRoles);
 
-                            if (addRolesResult.Succeeded)
+                            if (removeRolesResult.Succeeded || userRoles != null)
                             {
-                                transaction.Commit();
-                                return Ok(new { message = "User roles updated successfully" });
+                                var addRolesResult = await userManager.AddToRolesAsync(user, selectedRoles.Select(role => role.Name));
+
+                                if (addRolesResult.Succeeded)
+                                {
+                                    transaction.Commit();
+                                    return Ok(new { message = "User roles updated successfully" });
+                                }
                             }
                         }
+                        
+
+                       
                     }
 
                     // If any step fails, roll back the transaction.

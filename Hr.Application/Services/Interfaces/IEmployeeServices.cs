@@ -23,9 +23,10 @@ namespace Hr.Application.Services.Interfaces
         GetAllEmployeeDto GetEmployeeId(int id);
         void CreateEmployee(GetAllEmployeeDto EmployeeDto);
         void UpdateEmployee(GetAllEmployeeDto EmployeeDto, int id);
-        bool CheckEmployeeExists(GetAllEmployeeDto EmployeeDto);
+        
         void Remove(int id);
         GetAllEmployeeDto GetEmployeeByUserId(string userId);
+        bool CheckEmployeeExists(GetAllEmployeeDto employeeDto, out string message);
 
         #endregion
     }

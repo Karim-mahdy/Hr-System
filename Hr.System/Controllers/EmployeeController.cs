@@ -67,11 +67,13 @@ namespace Hr.System.Controllers
                         ModelState.AddModelError("LeaveTime", "Leave time cannot be before or equal to arrival time.");
                         return BadRequest(ModelState);
                     }
-                    if (employeeServices.CheckEmployeeExists(EmployeeDto))
+
+                    if (employeeServices.CheckEmployeeExists(EmployeeDto, out string message))
                     {
-                        ModelState.AddModelError("FirstName", "Employee Already Exist Check Name or Department or National Id");
+                        ModelState.AddModelError("FirstName", message);
                         return BadRequest(ModelState);
                     }
+
                     DateTime BirthDate = DateTime.Parse(EmployeeDto.BirthDate).Date;
                     DateTime dateTime = DateTime.Now;
                     // DateTime HireDate = DateTime.Parse(employeeDto.HireDate).Date;
@@ -112,23 +114,19 @@ namespace Hr.System.Controllers
                         ModelState.AddModelError("LeaveTime", "Leave time cannot be before or equal to arrival time.");
                         return BadRequest(ModelState);
                     }
-                    if (employeeServices.GetAllEmployee().Any(
-                        x => x.FirstName.ToLower() == employeeDto.FirstName.ToLower() &&
-                        x.LastName.ToLower() == employeeDto.LastName.ToLower() &&
-                        x.DepartmentId == employeeDto.DepartmentId &&
-                        x.NationalId ==employeeDto.NationalId &&
-                        x.ID != employeeDto.ID))
+                 
+                    if (employeeServices.CheckEmployeeExists(employeeDto,out string message))
                     {
-                        ModelState.AddModelError("FirstName", "Employee Already Exist Check Name or Department or National Id");
+                        ModelState.AddModelError("FirstName", message);
                         return BadRequest(ModelState);
                     }
 
                     DateTime BirthDate = DateTime.Parse(employeeDto.BirthDate).Date;
                     DateTime dateTime = DateTime.Now;
-                   // DateTime HireDate = DateTime.Parse(employeeDto.HireDate).Date;
+                    // DateTime HireDate = DateTime.Parse(employeeDto.HireDate).Date;
                     var age = dateTime - BirthDate;
                     int years = (int)(age.TotalDays / 365.25);
-                    if ( years < 18)
+                    if (years < 18)
                     {
                         ModelState.AddModelError("HireDate", "Age must grater than 18 ");
                         return BadRequest(ModelState);
@@ -144,14 +142,15 @@ namespace Hr.System.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
 
+
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             try
             {
                 employeeServices.Remove(id);
-                return Ok(new {message = "Employee deleted successfully." });
+                return Ok(new { message = "Employee deleted successfully." });
             }
             catch (Exception ex)
             {

@@ -131,13 +131,57 @@ SELECT @NetSalary = CASE
      (e.Salary / @DaysInMonth) * @AttendanceDays - @TotalDiscount + @TotalAdditional
     ELSE
         0   
-
+      
 END
 FROM Employees e
 WHERE e.Id = @EmployeeId;
 
-  
- 
+SELECT @NetSalary = CASE
+    WHEN @AttendanceDays > 0 THEN
+     (e.Salary / (@DaysInMonth - (@PublicHolidaysCount+ (@WeekendDaysCount*4)))) * @AttendanceDays   - @TotalDiscount + @TotalAdditional
+    ELSE
+        0   
+END
+FROM Employees e
+WHERE e.Id = @EmployeeId;
+
+
+---- Add extra pay for each week where the employee attends (7 - @WeekendDaysCount) days
+--IF @AttendanceDays >= 7 - @WeekendDaysCount
+--BEGIN
+--    DECLARE @ExtraWeeks INT;
+--    SET @ExtraWeeks = FLOOR(@AttendanceDays / (@DaysInMonth - @WeekendDaysCount));
+
+--    IF @ExtraWeeks = 1
+--    BEGIN
+--        SET @NetSalary = @NetSalary + (@Salary / @DaysInMonth) * @WeekendDaysCount * @ExtraWeeks;
+--    END
+
+--    IF @ExtraWeeks = 2
+--    BEGIN
+--        SET @NetSalary = @NetSalary + (@Salary / @DaysInMonth) * @WeekendDaysCount * @ExtraWeeks;
+--    END
+
+--    IF @ExtraWeeks >= 3 AND @AttendanceDays % (7 - @WeekendDaysCount) < (7 - @WeekendDaysCount)
+--    BEGIN
+--        SET @NetSalary = @NetSalary + (@Salary / @DaysInMonth) * @WeekendDaysCount * 2;
+--    END
+--    ELSE 
+--    BEGIN
+--        SET @NetSalary = @NetSalary + (@Salary / @DaysInMonth) * @WeekendDaysCount * @ExtraWeeks;
+--    END
+
+--    -- Add weekend days only if attendance in week 4 is greater than (7 - @WeekendDaysCount)
+--    IF @ExtraWeeks >= 4 AND @AttendanceDays % (7 - @WeekendDaysCount) < (7 - @WeekendDaysCount)
+--    BEGIN
+--        SET @NetSalary = @NetSalary + (@Salary / @DaysInMonth) * @WeekendDaysCount * 3;
+--    END
+--    ELSE
+--    BEGIN
+--        SET @NetSalary = @NetSalary + (@Salary / @DaysInMonth) * @WeekendDaysCount * @ExtraWeeks;
+--    END
+--END
+
  -- Return the calculated values
 SELECT 
     @EmployeeName as EmployeeName,
@@ -155,6 +199,6 @@ SELECT
 end
 
 -- Replace @EmployeeId, @Month, and @Year with the desired values
-EXEC sp_CalculateEmployeeSalaryReport @EmployeeId =2, @Month =11, @Year = 2023;
+EXEC sp_CalculateEmployeeSalaryReport @EmployeeId =1015, @Month =11, @Year = 2023;
 
 DROP PROCEDURE dbo.sp_CalculateEmployeeSalaryReport;

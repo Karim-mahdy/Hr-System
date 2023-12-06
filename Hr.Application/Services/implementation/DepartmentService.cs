@@ -22,7 +22,7 @@ namespace Hr.Application.Services.implementation
 
         public bool CheckDepartmentExists(DepartmentDTO departmentDto)
         {
-            return unitOfWork.DepartmentRepository.Any(x => x.DeptName.ToLower() == departmentDto.Name.ToLower());
+            return unitOfWork.DepartmentRepository.Any(x => x.DeptName.Trim().ToLower() == departmentDto.Name.Trim().ToLower());
         }
 
         public void Create(DepartmentDTO departmentDto)

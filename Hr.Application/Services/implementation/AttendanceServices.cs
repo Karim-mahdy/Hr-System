@@ -121,7 +121,7 @@ namespace Hr.Application.Services.implementation
         public IEnumerable<AttendanceEmployeDto> GetAllAttendance()
         {
             var attendanceDto = new List<AttendanceEmployeDto>();
-            var attendances = uniteOfWork.AttendanceRepository.GetAll();
+            var attendances = uniteOfWork.AttendanceRepository.GetAll().Where(x=>x.Date.Date == DateTime.Now.Date);
             if (attendances != null)
             {
                 foreach (var attendance in attendances)

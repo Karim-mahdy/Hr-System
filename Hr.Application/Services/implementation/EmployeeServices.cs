@@ -74,13 +74,27 @@ namespace Hr.Application.Services.implementation
 
         #region Employe
 
-        public bool CheckEmployeeExists(GetAllEmployeeDto EmployeeDto)
+       
+        public bool CheckEmployeeExists(GetAllEmployeeDto employeeDto, out string message)
         {
-          return  uniteOfWork.EmployeeRepository
-                 .Any( x => (x.FirstName.ToLower() == EmployeeDto.FirstName.ToLower() 
-                     && x.LastName.ToLower() == EmployeeDto.LastName.ToLower())||
-                     (x.DepartmentId == EmployeeDto.DepartmentId &&
-                         x.NationalId == EmployeeDto.NationalId));
+            message = ""; // Initialize the message variable
+
+            if (uniteOfWork.EmployeeRepository.GetAll().Any(
+                x => x.FirstName.ToLower() == employeeDto.FirstName.Trim().ToLower() &&
+                x.LastName.ToLower() == employeeDto.LastName.Trim().ToLower() && 
+                x.DepartmentId == employeeDto.DepartmentId &&
+                x.Id != employeeDto.ID) )
+            {
+                message = "Employee with similar name or similar department already exists.";
+                return true;
+            }
+            if (uniteOfWork.EmployeeRepository.GetAll().Any(x => x.NationalId == employeeDto.NationalId && x.Id != employeeDto.ID))
+            {
+                message = "Employee with similar national ID already exists.";
+                return true;
+            }
+
+            return false;
         }
 
         public IEnumerable<GetAllEmployeeDto> GetAllEmployee()
