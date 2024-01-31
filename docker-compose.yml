@@ -21,23 +21,7 @@ services:
       ACCEPT_EULA: "Y"
     volumes:
       - sql_data:/var/opt/mssql
-
-  migrations:
-    build: .
-    container_name: MigrationService
-    depends_on:
-      - sqlserver
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HrSystemDb;User Id=sa;Password=NewStrongP@ssw0rd;TrustServerCertificate=True
-    command: >
-      bash -c "
-      dotnet restore &&
-      dotnet ef migrations add InitialCreate &&
-      dotnet ef database update"
-    volumes:
-      - .:/app
-
+      
 volumes:
   sql_data:
 
