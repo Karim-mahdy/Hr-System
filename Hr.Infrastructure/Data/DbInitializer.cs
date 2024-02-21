@@ -20,18 +20,24 @@ namespace Hr.Infrastructure.Data
 {
     public static class DbInitializer
     {
-        public static async void Configure(IApplicationBuilder app)
+        public static async void InitializeDatabase(IApplicationBuilder app)
         {
             using (var serviceScope = app.ApplicationServices.CreateScope())
             {
+                   // SeedStoredProcedureData(serviceScope.ServiceProvider);
+                var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                // Apply pending migrations
+                await dbContext.Database.MigrateAsync();
+                // Optionally add your database seeding method here
                 var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
                 await roleManager.SeedAdminRoleAsync();
                 await userManager.SeedAdminUserAsync(roleManager);
-                SeedStoredProcedureData(serviceScope.ServiceProvider);
+             
             }
-            
+
             // Other configuration code
         }
         public static async Task SeedAdminRoleAsync(this RoleManager<IdentityRole> roleManager)
@@ -53,7 +59,7 @@ namespace Hr.Infrastructure.Data
             if (user == null)
             {
                 await userManager.CreateAsync(adminUser);
-               
+
                 await userManager.AddToRoleAsync(adminUser, SD.Roles.SuperAdmin.ToString());
             }
             await roleManager.SeedClaimsToAdmin(adminUser);
@@ -76,37 +82,37 @@ namespace Hr.Infrastructure.Data
                 }
             }
         }
-        private static void SeedStoredProcedureData(IServiceProvider serviceProvider)
-        {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        // private static void SeedStoredProcedureData(IServiceProvider serviceProvider)
+        // {
+        //     using (var scope = serviceProvider.CreateScope())
+        //     {
+        //         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                // Use different methods to get the current directory
-                var baseDirectoryPath = AppDomain.CurrentDomain.BaseDirectory;
-                var currentDirectoryPath = Directory.GetCurrentDirectory();
+        //         // Use different methods to get the current directory
+        //         var baseDirectoryPath = AppDomain.CurrentDomain.BaseDirectory;
+        //         var currentDirectoryPath = Directory.GetCurrentDirectory();
 
-                Console.WriteLine($"Base Directory: {baseDirectoryPath}");
-                Console.WriteLine($"Current Directory: {currentDirectoryPath}");
+        //         Console.WriteLine($"Base Directory: {baseDirectoryPath}");
+        //         Console.WriteLine($"Current Directory: {currentDirectoryPath}");
 
-                // Construct the correct path to the SQL script file
-                var scriptPath = Path.Combine(baseDirectoryPath, "SqlScripts", "sp_CalculateEmployeeSalaryReport.sql");
+        //         // Construct the correct path to the SQL script file
+        //         var scriptPath = Path.Combine(baseDirectoryPath, "SqlScripts", "sp_CalculateEmployeeSalaryReport.sql");
 
-                Console.WriteLine($"Attempting to read file at: {scriptPath}");
+        //         Console.WriteLine($"Attempting to read file at: {scriptPath}");
 
-                if (!File.Exists(scriptPath))
-                {
-                    Console.WriteLine($"Error: The file '{scriptPath}' does not exist.");
-                    return;
-                }
+        //         if (!File.Exists(scriptPath))
+        //         {
+        //             Console.WriteLine($"Error: The file '{scriptPath}' does not exist.");
+        //             return;
+        //         }
 
-                // Read the stored procedure script from the file
-                var script = File.ReadAllText(scriptPath);
+        //         // Read the stored procedure script from the file
+        //         var script = File.ReadAllText(scriptPath);
 
-                // Execute the stored procedure script
-                dbContext.Database.ExecuteSqlRaw(script);
-            }
-        }
+        //         // Execute the stored procedure script
+        //         dbContext.Database.ExecuteSqlRaw(script);
+        //     }
+        // }
 
 
 

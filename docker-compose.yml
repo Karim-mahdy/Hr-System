@@ -1,18 +1,28 @@
 version: '3.8'
+
 services:
   api:
     build: .
-    container_name: HrSystemApi
+    container_name: hr_system_api
     ports:
-      - "8081:8080"
-    depends_on:
-      - sqlserver
+      - "8080:80"
+      - "8081:433"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HrSystemDb;User Id=sa;Password=NewStrongP@ssw0rd;TrustServerCertificate=True
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: on-failure
 
   sqlserver:
     image: "mcr.microsoft.com/mssql/server:2022-latest"
-    container_name: SQL
+    container_name: sql_server
     hostname: sqlserver
     ports :
       - "1433:1433"
@@ -21,25 +31,16 @@ services:
       ACCEPT_EULA: "Y"
     volumes:
       - sql_data:/var/opt/mssql
-
-  migrations:
-    build: .
-    container_name: MigrationService
-    depends_on:
-      - sqlserver
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HrSystemDb;User Id=sa;Password=NewStrongP@ssw0rd;TrustServerCertificate=True
-    command: >
-      bash -c "
-      dotnet restore &&
-      dotnet ef migrations add InitialCreate &&
-      dotnet ef database update"
-    volumes:
-      - .:/app
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P NewStrongP@ssw0rd -Q 'SELECT 1;'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: on-failure
 
 volumes:
   sql_data:
+
 
 
 
@@ -48,22 +49,73 @@ volumes:
 # services:
 #   api:
 #     build: .
-#     environment:
-#       - ConnectionStrings__DefaultConnection=Server=db;Database=VSDB;User Id=sa;Password=NewStrongP@ssw0rd;TrustServerCertificate=True;
+#     container_name: hr_system_api
 #     ports:
-#       - "8081:8080"
+#       - "8080:80"
 #     depends_on:
-#       - db
+#       - sqlserver
+#     environment:
+#       - ASPNETCORE_ENVIRONMENT=Development
+#       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HrSystemDb;User Id=sa;Password=NewStrongP@ssw0rd;TrustServerCertificate=True
 
-#   db:
-#     image: mcr.microsoft.com/mssql/server:2019-latest
+#   sqlserver:
+#     image: "mcr.microsoft.com/mssql/server:2022-latest"
+#     container_name: sql_server
+#     hostname: sqlserver
+#     ports :
+#       - "1433:1433"
 #     environment:
 #       SA_PASSWORD: "NewStrongP@ssw0rd"
 #       ACCEPT_EULA: "Y"
-#     ports:
-#       - "8082:1433"
 #     volumes:
-#       - sqlvolume:/var/opt/mssql
+#       - sql_data:/var/opt/mssql
 
 # volumes:
-#   sqlvolume:
+#   sql_data:
+
+
+
+
+#       version: '3.8'
+
+# services:
+#   api:
+#     build: .
+#     container_name: HrSystemApi
+#     ports:
+#       - "8080:80"
+#     depends_on:
+#       - sqlserver
+#         #condition: service_healthy  # Wait for SQL Server to be healthy
+#     environment:
+#       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=HrSystemDb;User Id=sa;Password=NewStrongP@ssw0rd;TrustServerCertificate=True
+#     command: sh -c "sleep 45 && dotnet run"  # Delay for 30 seconds before starting the API
+
+#   sqlserver:
+#     image: "mcr.microsoft.com/mssql/server:2022-latest"
+#     container_name: SQL
+#     hostname: sqlserver
+#     ports :
+#       - "1433:1433"
+#     environment:
+#       SA_PASSWORD: "NewStrongP@ssw0rd"
+#       ACCEPT_EULA: "Y"
+#     healthcheck:
+#       test: ["CMD-SHELL", "sqlcmd -U sa -P NewStrongP@ssw0rd -Q 'SELECT 1'"]
+#       interval: 10s  # Check health every 10 seconds
+#       retries: 5     # Retry 5 times before considering the container unhealthy
+#       start_period: 30s  # Wait 30 seconds before starting the healthchecks
+#     volumes:
+#       - sql_data:/var/opt/mssql
+
+# volumes:
+#   sql_data:
+
+#   angular:
+#     build: ./angular
+#     ports:
+#       - "4200:80"
+#     depends_on:
+#       - webapi
+#     environment:
+#       - API_URL=http://webapi:5000

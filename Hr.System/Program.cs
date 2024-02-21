@@ -1,3 +1,4 @@
+using HealthChecks.UI.Client;
 using Hr.Application.Common.Filter;
 using Hr.Application.Interfaces;
 using Hr.Application.Services.implementation;
@@ -7,8 +8,10 @@ using Hr.Infrastructure.Data;
 using Hr.Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -18,11 +21,9 @@ namespace Hr.System
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -30,6 +31,9 @@ namespace Hr.System
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ApplicationDbContext>(option =>
                 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            //     check health of database connection 
+            builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
                 option =>
@@ -39,9 +43,12 @@ namespace Hr.System
                 }
 
                 ).AddEntityFrameworkStores<ApplicationDbContext>()
-                 .AddDefaultTokenProviders(); 
-           
+                .AddDefaultTokenProviders();
 
+            var serviceBuilder = builder.Services.BuildServiceProvider();
+
+
+            #region DI
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<IAttendanceServices, AttendanceServices>();
@@ -53,26 +60,6 @@ namespace Hr.System
             builder.Services.AddScoped<IGeneralSettingsService, GeneralSettingsService>();
 
 
-            //[Authoriz] used JWT Token in Chck Authantiaction
-
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-                    ValidateAudience = true,
-                    ValidAudience = builder.Configuration["JWT:ValidAudiance"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
-                };
-            });
             //Filter Permission // Authorization Services
             builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
@@ -80,34 +67,57 @@ namespace Hr.System
             {
                 options.ValidationInterval = TimeSpan.Zero;
             });
-          
+            #endregion
 
-          
+            #region JWT
+            builder.Services.AddAuthentication(options =>
+                       {
+                           options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                           options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                           options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                       }).AddJwtBearer(options =>
+                       {
+                           options.SaveToken = true;
+                           options.RequireHttpsMetadata = false;
+                           options.TokenValidationParameters = new TokenValidationParameters()
+                           {
+                               ValidateIssuer = true,
+                               ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                               ValidateAudience = true,
+                               ValidAudience = builder.Configuration["JWT:ValidAudiance"],
+                               IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+                           };
+                       });
+            #endregion
 
-            builder.Services.AddCors(corsOptions => {
+            #region CORS
+
+            builder.Services.AddCors(corsOptions =>
+            {
                 corsOptions.AddPolicy("MyPolicy", corsPolicyBuilder =>
                 {
                     corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
+            #endregion
 
-            //-----------------------------------
-            builder.Services.AddControllers();
+            #region Swagger Configurations
+
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo", Version = "v1" });
             });
             builder.Services.AddSwaggerGen(swagger =>
             {
-                //This is to generate the Default UI of Swagger Documentation    
+                //Thisï¿½isï¿½toï¿½generateï¿½theï¿½Defaultï¿½UIï¿½ofï¿½Swaggerï¿½Documentationï¿½ï¿½ï¿½ï¿½
                 swagger.SwaggerDoc("v2", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "ASP.NET 7 Web API",
+                    Title = "ASP.NETï¿½7ï¿½Webï¿½API",
                     Description = " Hr System"
                 });
 
-                // To Enable authorization using Swagger (JWT)    
+                //ï¿½Toï¿½Enableï¿½authorizationï¿½usingï¿½Swaggerï¿½(JWT)ï¿½ï¿½ï¿½ï¿½
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -115,7 +125,7 @@ namespace Hr.System
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
+                    Description = "Enterï¿½'Bearer'ï¿½[space]ï¿½andï¿½thenï¿½yourï¿½validï¿½tokenï¿½inï¿½theï¿½textï¿½inputï¿½below.\r\n\r\nExample:ï¿½\"Bearerï¿½eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\"",
                 });
                 swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
@@ -132,28 +142,54 @@ namespace Hr.System
                     }
                 });
             });
+            #endregion
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction() || app.Environment.IsEnvironment("Local"))
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hr System");
+                    c.RoutePrefix = "swagger"; // Set the Swagger UI route prefix
+                });
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseCors("MyPolicy");
-        
-            app.UseAuthentication();
-           
 
+            app.UseStaticFiles();
+            app.UseRouting(); // Add UseRouting here
+            app.UseCors("MyPolicy");
+            app.UseAuthentication();
             app.UseAuthorization();
-            
+
+            // healthy check 
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
+                {
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                }).AllowAnonymous(); // This line allows anonymous access to the health check endpoint
+            });
 
             app.MapControllers();
-            DbInitializer.Configure(app);
+
+            // Apply migrations and seeding if the database is healthy
+            var healthCheckService = app.Services.GetRequiredService<HealthCheckService>();
+            var healthCheckResult = await healthCheckService.CheckHealthAsync();
+
+            if (healthCheckResult.Status == HealthStatus.Healthy)
+            {
+                DbInitializer.InitializeDatabase(app);
+            }
+            else
+            {
+                Console.WriteLine("Database connection is unhealthy. Migration and seeding skipped.");
+            }
+
             app.Run();
         }
     }
